@@ -17,7 +17,8 @@ The split-flap mechanism is a small, framework-agnostic TypeScript engine (imper
   - **Shareable link** — the full display state is encoded into a short URL (`#s=…`)
   - **Embed widget** — copy-paste `<iframe>` that renders a clean, chrome-free board (the link's `&e=1` flag)
   - **Image** — download the board as a PNG (drawn to canvas, retina resolution)
-- **Premium touches** — fullscreen, auto-hiding controls (kiosk mode), optional mechanical tick sound, responsive auto-sizing, settings saved to `localStorage`
+- **On-screen controls** — each mode's settings live in a bar on the page (no menus to dig through). All controls are hidden by default and reveal on mouse movement, then fade away when idle (kiosk mode); they stay put while you're interacting with them.
+- **Premium touches** — fullscreen, optional mechanical tick sound, responsive auto-sizing, settings saved to `localStorage`
 
 ## Getting started
 
@@ -56,7 +57,7 @@ src/
   components/
     FlipBoard.tsx       Mounts the engine; runs the per-mode render loop
     Toolbar.tsx         Mode switcher + tool buttons
-    SettingsPanel.tsx   Per-mode settings (clock / countdown / message)
+    ModeControls.tsx    On-screen per-mode controls (clock / countdown / message)
     PalettePopover.tsx  Palette swatches
     ExportPopover.tsx   Share link, embed code, PNG download
     Icons.tsx           Inline SVG icons

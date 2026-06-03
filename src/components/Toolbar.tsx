@@ -1,5 +1,5 @@
 import type { Mode } from "../lib/config";
-import { SoundIcon, PaletteIcon, FullscreenIcon, GearIcon, ShareIcon } from "./Icons";
+import { SoundIcon, PaletteIcon, FullscreenIcon, ShareIcon } from "./Icons";
 
 interface Props {
   mode: Mode;
@@ -8,7 +8,6 @@ interface Props {
   onToggleSound: () => void;
   onTogglePalette: () => void;
   onFullscreen: () => void;
-  onToggleSettings: () => void;
   onToggleExport: () => void;
 }
 
@@ -25,7 +24,6 @@ export default function Toolbar({
   onToggleSound,
   onTogglePalette,
   onFullscreen,
-  onToggleSettings,
   onToggleExport,
 }: Props) {
   return (
@@ -54,9 +52,6 @@ export default function Toolbar({
         </button>
         <button className="icon-btn" title="Fullscreen" onClick={onFullscreen}>
           <FullscreenIcon />
-        </button>
-        <button className="icon-btn" title="Settings" data-pop-trigger onClick={onToggleSettings}>
-          <GearIcon />
         </button>
         <button className="icon-btn" title="Export & share" data-pop-trigger onClick={onToggleExport}>
           <ShareIcon />

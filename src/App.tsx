@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import FlipBoard from "./components/FlipBoard";
 import Toolbar from "./components/Toolbar";
-import SettingsPanel from "./components/SettingsPanel";
+import ModeControls from "./components/ModeControls";
 import PalettePopover from "./components/PalettePopover";
 import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
@@ -20,7 +20,7 @@ import {
 const { config: INITIAL, isEmbed: IS_EMBED, hadUrlCfg: HAD_URL_CFG } = getInitial();
 const noop = () => {};
 
-type Pop = "none" | "panel" | "palette" | "export";
+type Pop = "none" | "palette" | "export";
 
 export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
@@ -99,20 +99,35 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [fullscreen, toggleSound, update]);
 
-  // ----- Idle auto-hide (toggle body class directly to avoid re-renders) -----
+  // ----- Controls are hidden by default and reveal on activity (toggle the
+  // body class directly to avoid re-renders). They stay visible while a popover
+  // is open or while interacting with the on-screen controls. -----
   useEffect(() => {
     if (IS_EMBED) return;
+    document.body.classList.add("idle"); // hidden until the first movement
     let t: number | undefined;
+    const interacting = () => {
+      if (openPopRef.current !== "none") return true;
+      const ae = document.activeElement as HTMLElement | null;
+      return !!ae?.closest?.("#topbar, #modeControls, .popover");
+    };
+    const schedule = () => {
+      window.clearTimeout(t);
+      const check = () => {
+        if (interacting()) {
+          t = window.setTimeout(check, 1500);
+          return;
+        }
+        document.body.classList.add("idle");
+      };
+      t = window.setTimeout(check, 3000);
+    };
     const wake = () => {
       document.body.classList.remove("idle");
-      window.clearTimeout(t);
-      t = window.setTimeout(() => {
-        if (openPopRef.current === "none") document.body.classList.add("idle");
-      }, 3000);
+      schedule();
     };
-    const events = ["mousemove", "touchstart", "keydown", "click"] as const;
+    const events = ["mousemove", "touchstart", "keydown", "click", "focusin"] as const;
     events.forEach((e) => window.addEventListener(e, wake, { passive: true }));
-    wake();
     return () => {
       window.clearTimeout(t);
       events.forEach((e) => window.removeEventListener(e, wake));
@@ -159,31 +174,22 @@ export default function App() {
             onToggleSound={toggleSound}
             onTogglePalette={() => togglePop("palette")}
             onFullscreen={fullscreen}
-            onToggleSettings={() => togglePop("panel")}
             onToggleExport={() => togglePop("export")}
+          />
+
+          <ModeControls
+            config={config}
+            onClockFormat={(clockFormat) => update({ clockFormat })}
+            onClockSeconds={(clockSeconds) => update({ clockSeconds })}
+            onStartCountdown={(patch) => update(patch)}
+            onMessageChange={(message) => update({ message })}
+            onMessageDisplay={(message) => update({ message })}
           />
 
           {openPop === "palette" && (
             <PalettePopover
               palette={config.palette}
               onSelect={(palette) => update({ palette })}
-            />
-          )}
-
-          {openPop === "panel" && (
-            <SettingsPanel
-              config={config}
-              onClockFormat={(clockFormat) => update({ clockFormat })}
-              onClockSeconds={(clockSeconds) => update({ clockSeconds })}
-              onStartCountdown={(patch) => {
-                update(patch);
-                setOpenPop("none");
-              }}
-              onMessageChange={(message) => update({ message })}
-              onMessageDisplay={(message) => {
-                update({ message });
-                setOpenPop("none");
-              }}
             />
           )}
 
