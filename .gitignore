@@ -1,3 +1,13 @@
+# Dependencies & build output
+node_modules/
+dist/
+
 # Local preview / editor tooling
 .claude/
 .DS_Store
+
+# Logs
+npm-debug.log*
+
+# TypeScript incremental build info
+*.tsbuildinfo
