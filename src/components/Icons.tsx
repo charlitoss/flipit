@@ -46,3 +46,12 @@ export function ShareIcon() {
     </svg>
   );
 }
+
+export function ReplayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" {...stroke}>
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 .49-5.36L1 10" />
+    </svg>
+  );
+}

@@ -6,6 +6,7 @@ import PalettePopover from "./components/PalettePopover";
 import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
+import { renderMessage } from "./lib/display";
 import { tick } from "./lib/sound";
 import { applyPaletteVars, PALETTE_KEYS } from "./lib/palettes";
 import { buildExport, downloadImage } from "./lib/exportImage";
@@ -30,6 +31,8 @@ export default function App() {
   const boardRef = useRef<Board | null>(null);
   const openPopRef = useRef<Pop>(openPop);
   openPopRef.current = openPop;
+  const configRef = useRef(config);
+  configRef.current = config;
 
   const update = useCallback((patch: Partial<Config>) => {
     setConfig((c) => ({ ...c, ...patch }));
@@ -76,6 +79,14 @@ export default function App() {
 
   const onCountdownFinish = useCallback(() => {
     setConfig((c) => ({ ...c, cdEnd: null }));
+  }, []);
+
+  // Replay the airport flutter for the message currently on the board.
+  const replayMessage = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    b.forceRelayout();
+    renderMessage(b, configRef.current.message, setCaption);
   }, []);
 
   // ----- Keyboard shortcuts (skip in embed) -----
@@ -184,6 +195,7 @@ export default function App() {
             onStartCountdown={(patch) => update(patch)}
             onMessageChange={(message) => update({ message })}
             onMessageDisplay={(message) => update({ message })}
+            onReplay={replayMessage}
           />
 
           {openPop === "palette" && (

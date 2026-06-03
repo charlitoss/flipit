@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { Config } from "../lib/config";
+import { ReplayIcon } from "./Icons";
 
 interface Props {
   config: Config;
@@ -8,6 +9,7 @@ interface Props {
   onStartCountdown: (patch: Partial<Config>) => void;
   onMessageChange: (text: string) => void;
   onMessageDisplay: (text: string) => void;
+  onReplay: () => void;
 }
 
 function ClockControls({ config, onClockFormat, onClockSeconds }: Props) {
@@ -95,9 +97,20 @@ function CountdownControls({ config, onStartCountdown }: Props) {
   );
 }
 
-function MessageControls({ config, onMessageChange, onMessageDisplay }: Props) {
+function MessageControls({ config, onMessageChange, onMessageDisplay, onReplay }: Props) {
   const [text, setText] = useState(config.message);
   const timer = useRef<number | undefined>(undefined);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  // Grow the textarea to fit its content instead of scrolling.
+  useLayoutEffect(() => {
+    const ta = taRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    // scrollHeight excludes the border, but border-box height includes it.
+    const border = ta.offsetHeight - ta.clientHeight;
+    ta.style.height = ta.scrollHeight + border + "px";
+  }, [text]);
 
   const onInput = (v: string) => {
     setText(v);
@@ -106,18 +119,31 @@ function MessageControls({ config, onMessageChange, onMessageDisplay }: Props) {
   };
 
   return (
-    <>
-      <textarea
-        className="ctl-msg"
-        maxLength={240}
-        placeholder="Type a message…"
-        value={text}
-        onChange={(e) => onInput(e.target.value)}
-      />
-      <button className="btn-primary compact" onClick={() => onMessageDisplay(text || " ")}>
-        Display
-      </button>
-    </>
+    <div className="msg-controls">
+      <div className="msg-row">
+        <textarea
+          ref={taRef}
+          className="ctl-msg"
+          rows={1}
+          maxLength={240}
+          placeholder="Type a message…"
+          value={text}
+          onChange={(e) => onInput(e.target.value)}
+        />
+        <button
+          className="btn-ghost compact replay-btn"
+          title="Run the animation again"
+          onClick={onReplay}
+        >
+          <ReplayIcon />
+          Replay
+        </button>
+        <button className="btn-primary compact" onClick={() => onMessageDisplay(text || " ")}>
+          Display
+        </button>
+      </div>
+      <div className="ctl-hint">Press Enter for multiple lines.</div>
+    </div>
   );
 }
 
