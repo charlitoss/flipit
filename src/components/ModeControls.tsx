@@ -80,10 +80,8 @@ function CountdownControls({ config, onStartCountdown }: Props) {
         <input className="ctl-num" type="number" min={0} value={s} onChange={(e) => setS(e.target.value)} />
         <span className="ctl-unit">s</span>
       </div>
-      <div className="ctl-group">
-        <span className="ctl-label">or</span>
-        <input className="ctl-date" type="datetime-local" value={target} onChange={(e) => setTarget(e.target.value)} />
-      </div>
+      <span className="ctl-label ctl-or">or</span>
+      <input className="ctl-date" type="datetime-local" value={target} onChange={(e) => setTarget(e.target.value)} />
       <button className="btn-primary compact" onClick={start}>
         Start
       </button>
