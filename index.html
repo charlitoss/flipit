@@ -3,7 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Flipit — Split-Flap Display</title>
+
+    <!-- Primary meta -->
+    <title>Flipit — Split-Flap Clock, Countdown &amp; Message Board</title>
+    <meta
+      name="description"
+      content="A free split-flap (Solari) display for your browser: a flip clock, countdown timer, or animated message board — with retro &amp; condensed fonts, color themes, fullscreen and shareable links."
+    />
+    <meta
+      name="keywords"
+      content="split-flap display, flip clock, solari board, departure board, train station board, countdown timer, message board, flip clock app, split flap, airport board"
+    />
+    <meta name="author" content="charlitoss" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#0a0a0c" />
+    <meta name="application-name" content="Flipit" />
+    <meta name="apple-mobile-web-app-title" content="Flipit" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="canonical" href="https://flipit-tool.vercel.app/" />
+
+    <!-- Icons & manifest -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icon-512.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Flipit" />
+    <meta property="og:title" content="Flipit — Split-Flap Clock, Countdown &amp; Message Board" />
+    <meta
+      property="og:description"
+      content="A free split-flap (Solari) display for your browser: a flip clock, countdown timer, or animated message board — with retro fonts, color themes and shareable links."
+    />
+    <meta property="og:url" content="https://flipit-tool.vercel.app/" />
+    <meta property="og:image" content="https://flipit-tool.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Flipit split-flap display spelling FLIPIT" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Flipit — Split-Flap Clock, Countdown &amp; Message Board" />
+    <meta
+      name="twitter:description"
+      content="A free split-flap (Solari) display: a flip clock, countdown timer, or animated message board — with retro fonts, themes and shareable links."
+    />
+    <meta name="twitter:image" content="https://flipit-tool.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="Flipit split-flap display spelling FLIPIT" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Flipit",
+        "url": "https://flipit-tool.vercel.app/",
+        "description": "A free split-flap (Solari) display for your browser: a flip clock, countdown timer, or animated message board — with retro & condensed fonts, color themes, fullscreen and shareable links.",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any (modern web browser)",
+        "browserRequirements": "Requires JavaScript",
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Person", "name": "charlitoss" },
+        "screenshot": "https://flipit-tool.vercel.app/og-image.png",
+        "featureList": [
+          "Flip clock (12/24-hour)",
+          "Countdown timer",
+          "Animated message board",
+          "Airport-style flutter animation",
+          "10 color palettes",
+          "9 Google Fonts",
+          "Shareable links",
+          "Embeddable widget",
+          "PNG image export"
+        ]
+      }
+    </script>
+
+    <!-- Google Analytics (GA4) — skipped on localhost so dev traffic isn't tracked -->
+    <script>
+      (function () {
+        var ID = "G-Q0SY22CC3C";
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        window.gtag = gtag;
+        gtag("js", new Date());
+        gtag("config", ID);
+        var host = location.hostname;
+        if (host === "localhost" || host === "127.0.0.1" || host === "") return;
+        var s = document.createElement("script");
+        s.async = true;
+        s.src = "https://www.googletagmanager.com/gtag/js?id=" + ID;
+        document.head.appendChild(s);
+      })();
+    </script>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,6 +112,15 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="max-width: 640px; margin: 12vh auto; padding: 0 24px; font-family: system-ui, sans-serif; color: #f4f4f5; text-align: center;">
+        <h1>Flipit — Split-Flap Display</h1>
+        <p>
+          Flipit is a free split-flap (Solari) board for your browser — a flip clock, a countdown
+          timer, or an animated message board. It needs JavaScript enabled to run.
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

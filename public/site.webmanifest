@@ -1,0 +1,13 @@
+{
+  "name": "Flipit — Split-Flap Display",
+  "short_name": "Flipit",
+  "description": "A free split-flap (Solari) display: flip clock, countdown timer, or animated message board.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

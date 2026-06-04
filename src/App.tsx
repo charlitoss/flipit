@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
@@ -172,6 +173,7 @@ export default function App() {
 
   return (
     <>
+      <SpeedInsights />
       <FlipBoard
         config={config}
         soundOn={config.sound}
@@ -182,6 +184,14 @@ export default function App() {
 
       {!IS_EMBED && (
         <>
+          <header className="sr-only">
+            <h1>Flipit — a split-flap (Solari) display for your browser</h1>
+            <p>
+              A free flip clock, countdown timer, and animated message board with retro and
+              condensed fonts, color palettes, fullscreen, shareable links and an embeddable widget.
+            </p>
+          </header>
+
           <div id="caption">{caption}</div>
 
           <Toolbar
