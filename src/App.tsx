@@ -7,7 +7,7 @@ import AppearancePopover from "./components/AppearancePopover";
 import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
-import { tick } from "./lib/sound";
+import { tick, unlockAudio } from "./lib/sound";
 import { applyPaletteVars, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
 import { buildExport, downloadImage } from "./lib/exportImage";
@@ -79,12 +79,17 @@ export default function App() {
     else document.exitFullscreen?.();
   }, []);
 
-  const onCountdownFinish = useCallback(() => {
-    setConfig((c) => ({ ...c, cdEnd: null }));
-  }, []);
-
   // Bump a nonce to replay the airport flutter for the current message.
   const replayMessage = useCallback(() => setReplayNonce((n) => n + 1), []);
+
+  // Start a countdown (also unlocks audio so the end alarm can play later).
+  const startCountdown = useCallback(
+    (patch: Partial<Config>) => {
+      unlockAudio();
+      setConfig((c) => ({ ...c, ...patch }));
+    },
+    []
+  );
 
   // ----- Keyboard shortcuts (skip in embed) -----
   useEffect(() => {
@@ -166,11 +171,9 @@ export default function App() {
       <SpeedInsights />
       <FlipBoard
         config={config}
-        soundOn={config.sound}
         isEmbed={IS_EMBED}
         replayNonce={replayNonce}
         boardRef={boardRef}
-        onCountdownFinish={onCountdownFinish}
         onReplayRequest={replayMessage}
       />
 
@@ -198,7 +201,7 @@ export default function App() {
             config={config}
             onClockFormat={(clockFormat) => update({ clockFormat })}
             onClockSeconds={(clockSeconds) => update({ clockSeconds })}
-            onStartCountdown={(patch) => update(patch)}
+            onStartCountdown={startCountdown}
             onMessageChange={(message) => update({ message })}
             onReplay={replayMessage}
           />

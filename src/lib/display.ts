@@ -1,6 +1,5 @@
 import { Board } from "./flipEngine";
 import { sanitize } from "./chars";
-import { tick } from "./sound";
 import type { Config } from "./config";
 
 function pad(n: number, w = 2): string {
@@ -66,39 +65,32 @@ function countdownString(remainingSec: number): string {
   return pad(h) + ":" + pad(m) + ":" + pad(s);
 }
 
+// Returns true once the countdown has reached zero (held at 00:00:00).
 export function renderCountdown(
   board: Board,
-  cd: Pick<Config, "cdEnd" | "cdDuration" | "cdDone">,
-  setCaption: SetCaption,
-  onFinish: () => void,
-  sound: boolean
-): void {
+  cd: Pick<Config, "cdEnd" | "cdDuration">,
+  setCaption: SetCaption
+): boolean {
   if (!cd.cdEnd) {
+    // Idle (never started): preview the configured duration.
     const str = countdownString(cd.cdDuration);
     board.setLayout([str], buildSepCols(str));
     board.render([str]);
-    setCaption("", ""); // no instructional text
-    return;
+    setCaption("", "");
+    return false;
   }
   const remaining = (cd.cdEnd - Date.now()) / 1000;
-  if (remaining <= 0) {
-    const done = sanitize(cd.cdDone).trim() || "DONE";
-    board.setLayout([done]);
-    board.render([done], true); // flutter into the finished label
-    setCaption("Finished", "");
-    onFinish();
-    if (sound) {
-      tick();
-      setTimeout(tick, 140);
-      setTimeout(tick, 280);
-    }
-    return;
-  }
-  const str = countdownString(remaining);
+  const str = countdownString(remaining); // clamps to 00:00:00 at/after zero
   board.setLayout([str], buildSepCols(str));
   board.render([str]);
+  if (remaining <= 0) {
+    // Hold at 00:00:00 until a new countdown is started.
+    setCaption("Finished", "");
+    return true;
+  }
   const end = new Date(cd.cdEnd);
   setCaption("Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), "");
+  return false;
 }
 
 // ---------- Message ----------

@@ -1,25 +1,22 @@
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Board } from "../lib/flipEngine";
 import { renderClock, renderCountdown, renderMessage } from "../lib/display";
+import { alarm } from "../lib/sound";
 import type { Config } from "../lib/config";
 
 interface Props {
   config: Config;
-  soundOn: boolean;
   isEmbed: boolean;
   replayNonce: number;
   boardRef: MutableRefObject<Board | null>;
-  onCountdownFinish: () => void;
   onReplayRequest: () => void;
 }
 
 export default function FlipBoard({
   config,
-  soundOn,
   isEmbed,
   replayNonce,
   boardRef,
-  onCountdownFinish,
   onReplayRequest,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -28,10 +25,6 @@ export default function FlipBoard({
   // arg is kept for API symmetry but is currently unused.
   const [capAbove, setCapAbove] = useState("");
   const setCaption = useCallback((above: string, _below: string) => setCapAbove(above), []);
-
-  // Keep the latest sound flag without re-running the loop effects.
-  const soundRef = useRef(soundOn);
-  soundRef.current = soundOn;
 
   // Create the engine once and keep it sized to the viewport.
   useEffect(() => {
@@ -67,26 +60,29 @@ export default function FlipBoard({
     return () => window.clearInterval(id);
   }, [config.mode, config.clockFormat, config.clockSeconds, boardRef, setCaption]);
 
-  // Countdown loop.
+  // Countdown loop. The board holds at 00:00:00 once finished; the alarm fires
+  // once, on the transition to zero (not if it loads already expired).
   useEffect(() => {
     if (config.mode !== "countdown") return;
     const board = boardRef.current;
     if (!board) return;
-    const cd = { cdEnd: config.cdEnd, cdDuration: config.cdDuration, cdDone: config.cdDone };
-    const run = () => renderCountdown(board, cd, setCaption, onCountdownFinish, soundRef.current);
+    const cd = { cdEnd: config.cdEnd, cdDuration: config.cdDuration };
+    let sawRunning = false;
+    let firedAlarm = false;
+    const run = () => {
+      const atZero = renderCountdown(board, cd, setCaption);
+      if (!atZero) {
+        sawRunning = true;
+      } else if (sawRunning && !firedAlarm) {
+        firedAlarm = true;
+        alarm();
+      }
+    };
     board.forceRelayout();
     run();
     const id = window.setInterval(run, 250);
     return () => window.clearInterval(id);
-  }, [
-    config.mode,
-    config.cdEnd,
-    config.cdDuration,
-    config.cdDone,
-    boardRef,
-    setCaption,
-    onCountdownFinish,
-  ]);
+  }, [config.mode, config.cdEnd, config.cdDuration, boardRef, setCaption]);
 
   // Message: render on text change without forcing a relayout (so only the
   // changed letters flip). A replayNonce bump forces a full rebuild + flutter.
