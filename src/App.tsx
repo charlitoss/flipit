@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
 import LedBoard from "./components/LedBoard";
+import PixelBoard from "./components/PixelBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
@@ -53,11 +54,12 @@ export default function App() {
 
   useLayoutEffect(() => {
     document.body.classList.toggle("led-mode", config.style === "led");
+    document.body.classList.toggle("pixel-mode", config.style === "pixel");
   }, [config.style]);
 
-  // Light chrome only for light palettes in the flip style — LED is always dark.
+  // Light chrome only for light palettes in the flip style; LED/Pixel are dark.
   useLayoutEffect(() => {
-    const light = config.style !== "led" && isLightPalette(config.palette);
+    const light = config.style === "flip" && isLightPalette(config.palette);
     document.body.classList.toggle("light", light);
   }, [config.style, config.palette]);
 
@@ -71,7 +73,9 @@ export default function App() {
     const accent =
       config.style === "led"
         ? (LED_BY_KEY[config.ledColor] || LED_COLORS[0]).on
-        : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
+        : config.style === "pixel"
+          ? "#fafafa"
+          : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
     document.body.style.setProperty("--accent", accent);
   }, [config.style, config.ledColor, config.palette]);
 
@@ -197,6 +201,8 @@ export default function App() {
       <SpeedInsights />
       {config.style === "led" ? (
         <LedBoard config={config} isEmbed={IS_EMBED} />
+      ) : config.style === "pixel" ? (
+        <PixelBoard config={config} isEmbed={IS_EMBED} />
       ) : (
         <FlipBoard
           config={config}
@@ -242,10 +248,12 @@ export default function App() {
               palette={config.palette}
               font={config.font}
               ledColor={config.ledColor}
+              pixelVariant={config.pixelVariant}
               onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
               onSelectLed={(ledColor) => update({ ledColor })}
+              onSelectPixel={(pixelVariant) => update({ pixelVariant })}
             />
           )}
 

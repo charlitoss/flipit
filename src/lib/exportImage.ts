@@ -3,17 +3,46 @@ import { PALETTES } from "./palettes";
 import { FONT_BY_KEY } from "./fonts";
 import { LED_BY_KEY, LED_COLORS } from "./led";
 import { SEG_POLYS, litSegments, CHAR_VB } from "./segments";
+import { pixelFamily } from "./pixel";
 import { getDisplayState } from "./display";
 import { Config, shareURL } from "./config";
 
 const F = 150; // fixed font-size space for export geometry
+const PIXEL_LINE_H = F * 1.05;
+const PIXEL_ROW_GAP = 0.12 * F;
+const PIXEL_DIGIT_W = 0.66 * F;
+const PIXEL_NARROW_W = 0.34 * F;
+
+function measurePixelWidth(lines: string[], family: string): number {
+  const ctx = document.createElement("canvas").getContext("2d")!;
+  ctx.font = `${F}px "${family}", monospace`;
+  let maxW = 0;
+  for (const l of lines) maxW = Math.max(maxW, ctx.measureText(l).width);
+  return maxW || F;
+}
+
+function pixelGridWidth(line: string): number {
+  let w = 0;
+  for (const ch of line) w += ch === ":" || ch === " " ? PIXEL_NARROW_W : PIXEL_DIGIT_W;
+  return w;
+}
 
 // ---------- Embed/iframe aspect ----------
 function contentDims(config: Config): { W: number; H: number } {
   const { lines } = getDisplayState(config);
-  const cols = Math.max(1, ...lines.map((l) => [...l].length));
   const rows = lines.length || 1;
   const margin = 0.6 * F;
+  if (config.style === "pixel") {
+    const grid = config.mode !== "message";
+    const maxW = grid
+      ? Math.max(1, ...lines.map(pixelGridWidth))
+      : measurePixelWidth(lines, pixelFamily(config.pixelVariant));
+    return {
+      W: maxW + 2 * margin,
+      H: rows * PIXEL_LINE_H + (rows - 1) * PIXEL_ROW_GAP + 2 * margin,
+    };
+  }
+  const cols = Math.max(1, ...lines.map((l) => [...l].length));
   if (config.style === "led") {
     const cw = 0.64 * F;
     const ch = F;
@@ -233,6 +262,53 @@ function drawLedToCanvas(config: Config, scale: number): HTMLCanvasElement {
   return canvas;
 }
 
+// ---------- Geist Pixel board ----------
+function drawPixelToCanvas(config: Config, scale: number): HTMLCanvasElement {
+  const { lines } = getDisplayState(config);
+  const family = pixelFamily(config.pixelVariant);
+  const grid = config.mode !== "message";
+  const margin = 0.6 * F;
+  const maxW = grid
+    ? Math.max(1, ...lines.map(pixelGridWidth))
+    : measurePixelWidth(lines, family);
+  const rows = lines.length || 1;
+  const W = maxW + 2 * margin;
+  const H = rows * PIXEL_LINE_H + (rows - 1) * PIXEL_ROW_GAP + 2 * margin;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(W * scale);
+  canvas.height = Math.round(H * scale);
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(scale, scale);
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#161618");
+  bg.addColorStop(1, "#08080a");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.font = `${F}px "${family}", monospace`;
+  ctx.fillStyle = "#fafafa";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  let y = margin + PIXEL_LINE_H / 2;
+  for (const line of lines) {
+    if (grid) {
+      const rowW = pixelGridWidth(line);
+      let x = margin + (maxW - rowW) / 2;
+      for (const ch of line) {
+        const cw = ch === ":" || ch === " " ? PIXEL_NARROW_W : PIXEL_DIGIT_W;
+        ctx.fillText(ch, x + cw / 2, y);
+        x += cw;
+      }
+    } else {
+      ctx.fillText(line, W / 2, y);
+    }
+    y += PIXEL_LINE_H + PIXEL_ROW_GAP;
+  }
+  return canvas;
+}
+
 export async function downloadImage(config: Config, board: Board | null): Promise<void> {
   if (document.fonts?.ready) {
     try {
@@ -242,7 +318,13 @@ export async function downloadImage(config: Config, board: Board | null): Promis
     }
   }
   const canvas =
-    config.style === "led" ? drawLedToCanvas(config, 2) : board ? drawBoardToCanvas(board, config, 2) : null;
+    config.style === "led"
+      ? drawLedToCanvas(config, 2)
+      : config.style === "pixel"
+        ? drawPixelToCanvas(config, 2)
+        : board
+          ? drawBoardToCanvas(board, config, 2)
+          : null;
   if (!canvas) return;
   canvas.toBlob((blob) => {
     if (!blob) return;

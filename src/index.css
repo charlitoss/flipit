@@ -854,6 +854,99 @@ body.led-mode #caption-top {
   fill: var(--led-on);
 }
 
+/* ---------- Geist Pixel (Vercel) display ---------- */
+@font-face {
+  font-family: "Geist Pixel Square";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Grid";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Grid.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Line";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Line.woff2") format("woff2");
+  font-display: swap;
+}
+body.pixel-mode {
+  background: radial-gradient(120% 95% at 50% -12%, #161618, #08080a 72%);
+}
+body.pixel-mode #caption-top {
+  color: rgba(245, 245, 245, 0.42);
+}
+.pixel-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12em;
+  color: #fafafa;
+  line-height: 1.05;
+  /* fixed-width digits so the clock/countdown don't shift as numbers change */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+.pixel-row {
+  white-space: pre;
+}
+.pixel-row.grid {
+  white-space: nowrap;
+}
+.pixel-cell {
+  display: inline-block;
+  width: 0.66em;
+  text-align: center;
+}
+.pixel-cell.narrow {
+  width: 0.34em;
+}
+.pixel-measure {
+  position: absolute;
+  left: -99999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Pixel variant picker */
+.pixel-variants {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.pixel-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 6px 10px;
+  background: #0b0b0d;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  color: var(--ui);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+}
+.pixel-opt:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+}
+.pixel-opt.active {
+  border-color: var(--accent);
+}
+.po-sample {
+  font-size: 27px;
+  line-height: 1;
+  color: #fafafa;
+}
+.po-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ui-dim);
+}
+
 /* ---------- Export / share popover ---------- */
 #exportPop {
   position: fixed;
