@@ -1,6 +1,7 @@
 import { PALETTES, PALETTE_KEYS } from "../lib/palettes";
 import { FONTS, FONT_CATEGORIES } from "../lib/fonts";
 import { LED_COLORS } from "../lib/led";
+import { PIXEL_VARIANTS, PIXEL_COLORS } from "../lib/pixel";
 import type { DisplayStyle } from "../lib/config";
 
 interface Props {
@@ -8,10 +9,16 @@ interface Props {
   palette: string;
   font: string;
   ledColor: string;
+  pixelVariant: string;
+  pixelColor: string;
+  crt: boolean;
   onSelectStyle: (s: DisplayStyle) => void;
   onSelectPalette: (key: string) => void;
   onSelectFont: (key: string) => void;
   onSelectLed: (key: string) => void;
+  onSelectPixel: (key: string) => void;
+  onSelectPixelColor: (key: string) => void;
+  onToggleCrt: (v: boolean) => void;
 }
 
 export default function AppearancePopover({
@@ -19,12 +26,17 @@ export default function AppearancePopover({
   palette,
   font,
   ledColor,
+  pixelVariant,
+  pixelColor,
+  crt,
   onSelectStyle,
   onSelectPalette,
   onSelectFont,
   onSelectLed,
+  onSelectPixel,
+  onSelectPixelColor,
+  onToggleCrt,
 }: Props) {
-  const led = style === "led";
   return (
     <div id="palettePop" className="popover">
       <h3>Style</h3>
@@ -32,12 +44,15 @@ export default function AppearancePopover({
         <button className={style === "flip" ? "active" : ""} onClick={() => onSelectStyle("flip")}>
           Flip
         </button>
-        <button className={led ? "active" : ""} onClick={() => onSelectStyle("led")}>
+        <button className={style === "led" ? "active" : ""} onClick={() => onSelectStyle("led")}>
           LED
+        </button>
+        <button className={style === "pixel" ? "active" : ""} onClick={() => onSelectStyle("pixel")}>
+          Pixel
         </button>
       </div>
 
-      {led ? (
+      {style === "led" && (
         <>
           <h3 className="appearance-section">Color</h3>
           <div className="led-swatches">
@@ -55,7 +70,57 @@ export default function AppearancePopover({
             ))}
           </div>
         </>
-      ) : (
+      )}
+
+      {style === "pixel" && (
+        <>
+          <h3 className="appearance-section">Variant</h3>
+          <div className="pixel-variants">
+            {PIXEL_VARIANTS.map((v) => (
+              <button
+                key={v.key}
+                className={"pixel-opt" + (pixelVariant === v.key ? " active" : "")}
+                onClick={() => onSelectPixel(v.key)}
+              >
+                <span className="po-sample" style={{ fontFamily: `"${v.family}", monospace` }}>
+                  A8
+                </span>
+                <span className="po-name">{v.name}</span>
+              </button>
+            ))}
+          </div>
+
+          <h3 className="appearance-section">Color</h3>
+          <div className="led-swatches pixel-swatches">
+            {PIXEL_COLORS.map((c) => (
+              <button
+                key={c.key}
+                className={"led-swatch" + (pixelColor === c.key ? " active" : "")}
+                title={c.name}
+                aria-label={c.name}
+                style={{ ["--sw-on" as string]: c.on } as React.CSSProperties}
+                onClick={() => onSelectPixelColor(c.key)}
+              >
+                <span className="led-dot" />
+              </button>
+            ))}
+          </div>
+
+          <div className="appearance-toggle">
+            <span>CRT effect</span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={crt}
+                onChange={(e) => onToggleCrt(e.target.checked)}
+              />
+              <span className="track" />
+            </label>
+          </div>
+        </>
+      )}
+
+      {style === "flip" && (
         <>
           <h3 className="appearance-section">Color</h3>
           <div className="swatches">

@@ -100,11 +100,15 @@ export const PALETTES: Record<string, Palette> = {
 
 export const PALETTE_KEYS = Object.keys(PALETTES);
 
-// Apply a palette's colors as CSS variables on <body> and flag light chrome.
+// Apply a palette's colors as CSS variables on <body>. (The `light` chrome
+// class is managed in App, since it must stay off under the LED style.)
 export function applyPaletteVars(palette: string): void {
   const pal = PALETTES[palette] || PALETTES.onyx;
   for (const [k, v] of Object.entries(pal.vars)) {
     document.body.style.setProperty("--" + k, v);
   }
-  document.body.classList.toggle("light", !!pal.light);
+}
+
+export function isLightPalette(palette: string): boolean {
+  return !!(PALETTES[palette] || PALETTES.onyx).light;
 }

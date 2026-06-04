@@ -11,11 +11,10 @@ export interface FontDef {
 // The board glyphs are mostly uppercase letters, digits and ":" — these faces
 // all render those well. `scale` keeps each face filling the cell nicely.
 export const FONTS: FontDef[] = [
-  { key: "default", name: "Default", category: "Clean", family: "", stack: '"Helvetica Neue", Arial, sans-serif', weight: 700, scale: 1 },
+  { key: "default", name: "Helvetica Neue", category: "Clean", family: "", stack: '"Helvetica Neue", Arial, sans-serif', weight: 700, scale: 1 },
   { key: "space", name: "Space Grotesk", category: "Clean", family: "Space Grotesk", stack: '"Space Grotesk", sans-serif', weight: 700, scale: 1 },
 
   { key: "oswald", name: "Oswald", category: "Condensed", family: "Oswald", stack: '"Oswald", sans-serif', weight: 600, scale: 1.04 },
-  { key: "bebas", name: "Bebas Neue", category: "Condensed", family: "Bebas Neue", stack: '"Bebas Neue", sans-serif', weight: 400, scale: 1.14 },
   { key: "archivo", name: "Archivo Narrow", category: "Condensed", family: "Archivo Narrow", stack: '"Archivo Narrow", sans-serif', weight: 700, scale: 1.04 },
 
   { key: "orbitron", name: "Orbitron", category: "Retro / Modern", family: "Orbitron", stack: '"Orbitron", sans-serif', weight: 700, scale: 0.84 },
