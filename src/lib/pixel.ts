@@ -63,5 +63,6 @@ export function applyPixel(key: string): void {
   const s = document.body.style;
   s.setProperty("--pixel-on", c.on);
   s.setProperty("--pixel-dim", dim);
+  s.setProperty("--pixel-glow", `rgba(${c.rgb},0.55)`); // CRT phosphor bloom
   s.setProperty("--px-tile", pixelTileURL(dim));
 }

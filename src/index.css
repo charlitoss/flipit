@@ -960,8 +960,12 @@ body.pixel-mode #caption-top {
    text-shadow; the flicker is an opacity animation on a promoted layer.
    The overlay sits above the display (z 10) but below the controls (z 18+). */
 body.crt-on .pixel-board {
-  /* chromatic aberration — red/blue split, far cheaper than an SVG filter */
-  text-shadow: -0.6px 0 0 rgba(255, 50, 70, 0.5), 0.6px 0 0 rgba(40, 150, 255, 0.5);
+  /* chromatic aberration (scaled to the pixel size) + phosphor bloom — both
+     far cheaper than an SVG filter (only repaint when the glyphs change) */
+  text-shadow:
+    calc(var(--px-bg, 8px) * -0.22) 0 0 rgba(255, 45, 70, 0.75),
+    calc(var(--px-bg, 8px) * 0.22) 0 0 rgba(35, 150, 255, 0.75),
+    0 0 calc(var(--px-bg, 8px) * 0.55) var(--pixel-glow, rgba(255, 255, 255, 0.55));
 }
 .crt-overlay {
   position: fixed;
@@ -975,30 +979,30 @@ body.crt-on .pixel-board {
   inset: 0;
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.22) 0px,
-    rgba(0, 0, 0, 0.22) 1px,
-    transparent 1px,
-    transparent 3px
+    rgba(0, 0, 0, 0.42) 0px,
+    rgba(0, 0, 0, 0.42) 1.5px,
+    transparent 1.5px,
+    transparent 4px
   );
   /* promote to its own layer so the flicker animates on the GPU (opacity only) */
   transform: translateZ(0);
   will-change: opacity;
-  animation: crt-flicker 120ms steps(2, end) infinite;
+  animation: crt-flicker 110ms steps(2, end) infinite;
 }
 .crt-overlay__vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.36) 100%);
+  background: radial-gradient(ellipse at center, transparent 48%, rgba(0, 0, 0, 0.5) 100%);
 }
 @keyframes crt-flicker {
   0% {
-    opacity: 0.92;
+    opacity: 0.82;
   }
   50% {
     opacity: 1;
   }
   100% {
-    opacity: 0.95;
+    opacity: 0.9;
   }
 }
 @media (prefers-reduced-motion: reduce) {
