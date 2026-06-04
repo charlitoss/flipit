@@ -114,3 +114,35 @@ export function renderMessage(board: Board, message: string, setCaption: SetCapt
   board.render(lines, true); // airport-style flutter
   setCaption("", "");
 }
+
+// ---------- Renderer-agnostic snapshot (used by the LED display) ----------
+export interface DisplayState {
+  lines: string[];
+  caption: string; // shown above the board
+  atZero: boolean; // countdown reached zero
+}
+
+export function getDisplayState(config: Config): DisplayState {
+  if (config.mode === "clock") {
+    const str = clockString(config.clockFormat, config.clockSeconds);
+    const caption = new Date().toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+    return { lines: [str], caption, atZero: false };
+  }
+  if (config.mode === "countdown") {
+    if (!config.cdEnd) {
+      return { lines: [countdownString(config.cdDuration)], caption: "", atZero: false };
+    }
+    const remaining = (config.cdEnd - Date.now()) / 1000;
+    const str = countdownString(remaining);
+    if (remaining <= 0) return { lines: [str], caption: "Finished", atZero: true };
+    const end = new Date(config.cdEnd);
+    const caption =
+      "Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return { lines: [str], caption, atZero: false };
+  }
+  return { lines: layoutMessage(config.message), caption: "", atZero: false };
+}

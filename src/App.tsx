@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
+import LedBoard from "./components/LedBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
@@ -8,8 +9,9 @@ import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
 import { tick, unlockAudio } from "./lib/sound";
-import { applyPaletteVars, PALETTE_KEYS } from "./lib/palettes";
+import { applyPaletteVars, PALETTES, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
+import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
 import { buildExport, downloadImage } from "./lib/exportImage";
 import {
   Config,
@@ -48,6 +50,24 @@ export default function App() {
   useLayoutEffect(() => {
     applyFont(config.font);
   }, [config.font]);
+
+  useLayoutEffect(() => {
+    document.body.classList.toggle("led-mode", config.style === "led");
+  }, [config.style]);
+
+  useLayoutEffect(() => {
+    applyLed(config.ledColor);
+  }, [config.ledColor]);
+
+  // UI accent follows the LED color in LED mode, otherwise the palette accent.
+  // (Runs after applyPaletteVars so it has the final say on --accent.)
+  useLayoutEffect(() => {
+    const accent =
+      config.style === "led"
+        ? (LED_BY_KEY[config.ledColor] || LED_COLORS[0]).on
+        : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
+    document.body.style.setProperty("--accent", accent);
+  }, [config.style, config.ledColor, config.palette]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -164,18 +184,22 @@ export default function App() {
 
   const onMode = (m: Mode) => update({ mode: m });
 
-  const exportData = openPop === "export" ? buildExport(config, boardRef.current) : null;
+  const exportData = openPop === "export" ? buildExport(config) : null;
 
   return (
     <>
       <SpeedInsights />
-      <FlipBoard
-        config={config}
-        isEmbed={IS_EMBED}
-        replayNonce={replayNonce}
-        boardRef={boardRef}
-        onReplayRequest={replayMessage}
-      />
+      {config.style === "led" ? (
+        <LedBoard config={config} isEmbed={IS_EMBED} />
+      ) : (
+        <FlipBoard
+          config={config}
+          isEmbed={IS_EMBED}
+          replayNonce={replayNonce}
+          boardRef={boardRef}
+          onReplayRequest={replayMessage}
+        />
+      )}
 
       {!IS_EMBED && (
         <>
@@ -208,10 +232,14 @@ export default function App() {
 
           {openPop === "palette" && (
             <AppearancePopover
+              style={config.style}
               palette={config.palette}
               font={config.font}
+              ledColor={config.ledColor}
+              onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
+              onSelectLed={(ledColor) => update({ ledColor })}
             />
           )}
 
@@ -219,7 +247,7 @@ export default function App() {
             <ExportPopover
               link={exportData.link}
               embed={exportData.embed}
-              onDownload={() => boardRef.current && downloadImage(boardRef.current, config)}
+              onDownload={() => downloadImage(config, boardRef.current)}
             />
           )}
         </>
