@@ -40,7 +40,7 @@ export default function AppearancePopover({
           LED
         </button>
         <button className={style === "pixel" ? "active" : ""} onClick={() => onSelectStyle("pixel")}>
-          Geist
+          Pixel
         </button>
       </div>
 

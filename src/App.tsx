@@ -55,7 +55,11 @@ export default function App() {
   useLayoutEffect(() => {
     document.body.classList.toggle("led-mode", config.style === "led");
     document.body.classList.toggle("pixel-mode", config.style === "pixel");
-  }, [config.style]);
+    // Background texture follows the pixel variant: dots for square/grid, lines for line.
+    const isPixel = config.style === "pixel";
+    document.body.classList.toggle("pv-dots", isPixel && config.pixelVariant !== "line");
+    document.body.classList.toggle("pv-lines", isPixel && config.pixelVariant === "line");
+  }, [config.style, config.pixelVariant]);
 
   // Light chrome only for light palettes in the flip style; LED/Pixel are dark.
   useLayoutEffect(() => {

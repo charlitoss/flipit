@@ -10,7 +10,7 @@ The split-flap mechanism is a small, framework-agnostic TypeScript engine (imper
   - **Clock** — 12/24-hour, optional seconds, live date caption
   - **Countdown** — count down to a date & time or a quick H/M/S duration, with a custom "finished" label
   - **Message** — multi-line departure-board text (letters, numbers & `. , : ' ! ? - / & @ # % +`)
-- **Three display styles** — the **Split-flap** (Solari) board, a **digital LED** 14-segment alphanumeric display (5 colors), or a **Geist Pixel** bitmap display (Square / Grid / Line variants)
+- **Three display styles** — the **Split-flap** (Solari) board, a **digital LED** 14-segment alphanumeric display (5 colors), or a **Pixel** display using Vercel's Geist Pixel font (Square / Grid / Line variants, each with a matching dot/scanline backdrop)
 - **Airport flutter** — each split-flap cell clatters through random characters and the board resolves in a left-to-right wave, just like a real Solari board. Editing a message only re-flips the letters that changed.
 - **10 color palettes** — Onyx, Slate, Midnight, Forest, Crimson, Synthwave, Amber (dark) + Departures, Paper, Mint (light)
 - **6 board fonts** (Google Fonts) across clean, condensed (Oswald, Archivo Narrow) and modern (Orbitron, Bungee) styles
@@ -74,7 +74,7 @@ src/
     FlipBoard.tsx       Split-flap board: mounts the engine; runs the render loop
     LedBoard.tsx        Digital LED (14-segment) board
     LedChar.tsx         One 14-segment LED character
-    PixelBoard.tsx      Geist Pixel (bitmap) board
+    PixelBoard.tsx      Pixel display (Geist Pixel font)
     Toolbar.tsx         Mode switcher + tool buttons
     ModeControls.tsx    On-screen per-mode controls (clock / countdown / message)
     AppearancePopover.tsx  Combined color palette + board font picker

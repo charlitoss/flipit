@@ -873,6 +873,72 @@ body.led-mode #caption-top {
 body.pixel-mode {
   background: radial-gradient(120% 95% at 50% -12%, #161618, #08080a 72%);
 }
+
+/* Dim, variant-matched background texture behind the display:
+   dots for the square/grid variants, scanlines for the line variant.
+   It slowly drifts to feel alive, and fades toward the edges to frame the board. */
+body.pixel-mode.pv-dots #stage::before,
+body.pixel-mode.pv-lines #stage::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(125% 115% at 50% 44%, #000 30%, transparent 82%);
+  mask-image: radial-gradient(125% 115% at 50% 44%, #000 30%, transparent 82%);
+}
+body.pixel-mode.pv-dots #stage::before {
+  background-image: radial-gradient(rgba(250, 250, 250, 0.09) 1.4px, transparent 1.7px);
+  background-size: 15px 15px;
+  animation: pv-dots-drift 24s linear infinite;
+}
+body.pixel-mode.pv-lines #stage::before {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(250, 250, 250, 0.075) 0 1.4px,
+    transparent 1.4px 8px
+  );
+  animation: pv-lines-drift 13s linear infinite;
+}
+@keyframes pv-dots-drift {
+  0% {
+    background-position: 0 0;
+    opacity: 0.88;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 15px 15px;
+    opacity: 0.88;
+  }
+}
+@keyframes pv-lines-drift {
+  0% {
+    background-position: 0 0;
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 0 8px;
+    opacity: 0.85;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.pixel-mode.pv-dots #stage::before,
+  body.pixel-mode.pv-lines #stage::before {
+    animation: none;
+  }
+}
+/* keep the display above the texture */
+body.pixel-mode #caption-top,
+body.pixel-mode .pixel-board:not(.pixel-measure) {
+  position: relative;
+  z-index: 1;
+}
+
 body.pixel-mode #caption-top {
   color: rgba(245, 245, 245, 0.42);
 }
