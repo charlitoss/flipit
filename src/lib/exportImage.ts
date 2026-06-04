@@ -95,14 +95,16 @@ function drawBoardToCanvas(board: Board, config: Config, scale: number): HTMLCan
         ctx.save();
         rr(x, y, w, m.uH, m.rad);
         ctx.clip();
+        // top half (darker)
         const gt = ctx.createLinearGradient(0, y, 0, y + m.uH / 2);
-        gt.addColorStop(0, pal["card-top"]);
-        gt.addColorStop(1, pal["card-top-2"]);
+        gt.addColorStop(0, pal["card-bot-2"]);
+        gt.addColorStop(1, pal["card-bot"]);
         ctx.fillStyle = gt;
         ctx.fillRect(x, y, w, m.uH / 2);
+        // bottom half (lighter)
         const gb = ctx.createLinearGradient(0, y + m.uH / 2, 0, y + m.uH);
-        gb.addColorStop(0, pal["card-bot"]);
-        gb.addColorStop(1, pal["card-bot-2"]);
+        gb.addColorStop(0, pal["card-top-2"]);
+        gb.addColorStop(1, pal["card-top"]);
         ctx.fillStyle = gb;
         ctx.fillRect(x, y + m.uH / 2, w, m.uH / 2);
         ctx.restore();
