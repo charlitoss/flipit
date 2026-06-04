@@ -431,10 +431,18 @@ body.light .icon-btn:hover {
   padding: 8px 10px;
   outline: none;
   transition: border-color 0.15s;
+  /* dark-themed native widgets (date picker icon, number spinner) */
+  color-scheme: dark;
 }
 body.light .controls-card input,
 body.light .controls-card textarea {
   background: rgba(255, 255, 255, 0.6);
+  color-scheme: light;
+}
+/* Keep the date field's calendar icon visible on any theme. */
+.ctl-date::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+  cursor: pointer;
 }
 .controls-card input:focus,
 .controls-card textarea:focus {
@@ -777,8 +785,8 @@ body.light .font-opt:hover {
 /* LED color presets */
 .led-swatches {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
 }
 .led-swatch {
   position: relative;
@@ -811,7 +819,7 @@ body.light .font-opt:hover {
 body.led-mode {
   background: radial-gradient(120% 95% at 50% -10%, #121214, #070708 72%);
   --led-on: #ff3a3a;
-  --led-off: rgba(255, 55, 55, 0.13);
+  --led-off: rgba(74, 18, 18, 0.9);
   --led-glow: rgba(255, 80, 80, 0.5);
 }
 body.led-mode #caption-top {

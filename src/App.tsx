@@ -9,7 +9,7 @@ import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
 import { tick, unlockAudio } from "./lib/sound";
-import { applyPaletteVars, PALETTES, PALETTE_KEYS } from "./lib/palettes";
+import { applyPaletteVars, isLightPalette, PALETTES, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
 import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
 import { buildExport, downloadImage } from "./lib/exportImage";
@@ -54,6 +54,12 @@ export default function App() {
   useLayoutEffect(() => {
     document.body.classList.toggle("led-mode", config.style === "led");
   }, [config.style]);
+
+  // Light chrome only for light palettes in the flip style — LED is always dark.
+  useLayoutEffect(() => {
+    const light = config.style !== "led" && isLightPalette(config.palette);
+    document.body.classList.toggle("light", light);
+  }, [config.style, config.palette]);
 
   useLayoutEffect(() => {
     applyLed(config.ledColor);
