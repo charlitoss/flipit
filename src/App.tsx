@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import FlipBoard from "./components/FlipBoard";
 import Toolbar from "./components/Toolbar";
-import SettingsPanel from "./components/SettingsPanel";
+import ModeControls from "./components/ModeControls";
 import PalettePopover from "./components/PalettePopover";
+import FontPopover from "./components/FontPopover";
 import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
+import { renderMessage } from "./lib/display";
 import { tick } from "./lib/sound";
 import { applyPaletteVars, PALETTE_KEYS } from "./lib/palettes";
+import { applyFont } from "./lib/fonts";
 import { buildExport, downloadImage } from "./lib/exportImage";
 import {
   Config,
@@ -20,7 +23,7 @@ import {
 const { config: INITIAL, isEmbed: IS_EMBED, hadUrlCfg: HAD_URL_CFG } = getInitial();
 const noop = () => {};
 
-type Pop = "none" | "panel" | "palette" | "export";
+type Pop = "none" | "palette" | "font" | "export";
 
 export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
@@ -30,6 +33,8 @@ export default function App() {
   const boardRef = useRef<Board | null>(null);
   const openPopRef = useRef<Pop>(openPop);
   openPopRef.current = openPop;
+  const configRef = useRef(config);
+  configRef.current = config;
 
   const update = useCallback((patch: Partial<Config>) => {
     setConfig((c) => ({ ...c, ...patch }));
@@ -43,6 +48,10 @@ export default function App() {
   useLayoutEffect(() => {
     applyPaletteVars(config.palette);
   }, [config.palette]);
+
+  useLayoutEffect(() => {
+    applyFont(config.font);
+  }, [config.font]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -78,6 +87,14 @@ export default function App() {
     setConfig((c) => ({ ...c, cdEnd: null }));
   }, []);
 
+  // Replay the airport flutter for the message currently on the board.
+  const replayMessage = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    b.forceRelayout();
+    renderMessage(b, configRef.current.message, setCaption);
+  }, []);
+
   // ----- Keyboard shortcuts (skip in embed) -----
   useEffect(() => {
     if (IS_EMBED) return;
@@ -99,20 +116,35 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [fullscreen, toggleSound, update]);
 
-  // ----- Idle auto-hide (toggle body class directly to avoid re-renders) -----
+  // ----- Controls are hidden by default and reveal on activity (toggle the
+  // body class directly to avoid re-renders). They stay visible while a popover
+  // is open or while interacting with the on-screen controls. -----
   useEffect(() => {
     if (IS_EMBED) return;
+    document.body.classList.add("idle"); // hidden until the first movement
     let t: number | undefined;
+    const interacting = () => {
+      if (openPopRef.current !== "none") return true;
+      const ae = document.activeElement as HTMLElement | null;
+      return !!ae?.closest?.("#topbar, #modeControls, .popover");
+    };
+    const schedule = () => {
+      window.clearTimeout(t);
+      const check = () => {
+        if (interacting()) {
+          t = window.setTimeout(check, 1500);
+          return;
+        }
+        document.body.classList.add("idle");
+      };
+      t = window.setTimeout(check, 3000);
+    };
     const wake = () => {
       document.body.classList.remove("idle");
-      window.clearTimeout(t);
-      t = window.setTimeout(() => {
-        if (openPopRef.current === "none") document.body.classList.add("idle");
-      }, 3000);
+      schedule();
     };
-    const events = ["mousemove", "touchstart", "keydown", "click"] as const;
+    const events = ["mousemove", "touchstart", "keydown", "click", "focusin"] as const;
     events.forEach((e) => window.addEventListener(e, wake, { passive: true }));
-    wake();
     return () => {
       window.clearTimeout(t);
       events.forEach((e) => window.removeEventListener(e, wake));
@@ -158,9 +190,19 @@ export default function App() {
             onMode={onMode}
             onToggleSound={toggleSound}
             onTogglePalette={() => togglePop("palette")}
+            onToggleFont={() => togglePop("font")}
             onFullscreen={fullscreen}
-            onToggleSettings={() => togglePop("panel")}
             onToggleExport={() => togglePop("export")}
+          />
+
+          <ModeControls
+            config={config}
+            onClockFormat={(clockFormat) => update({ clockFormat })}
+            onClockSeconds={(clockSeconds) => update({ clockSeconds })}
+            onStartCountdown={(patch) => update(patch)}
+            onMessageChange={(message) => update({ message })}
+            onMessageDisplay={(message) => update({ message })}
+            onReplay={replayMessage}
           />
 
           {openPop === "palette" && (
@@ -170,21 +212,8 @@ export default function App() {
             />
           )}
 
-          {openPop === "panel" && (
-            <SettingsPanel
-              config={config}
-              onClockFormat={(clockFormat) => update({ clockFormat })}
-              onClockSeconds={(clockSeconds) => update({ clockSeconds })}
-              onStartCountdown={(patch) => {
-                update(patch);
-                setOpenPop("none");
-              }}
-              onMessageChange={(message) => update({ message })}
-              onMessageDisplay={(message) => {
-                update({ message });
-                setOpenPop("none");
-              }}
-            />
+          {openPop === "font" && (
+            <FontPopover font={config.font} onSelect={(font) => update({ font })} />
           )}
 
           {openPop === "export" && exportData && (

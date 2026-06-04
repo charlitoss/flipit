@@ -12,12 +12,14 @@ The split-flap mechanism is a small, framework-agnostic TypeScript engine (imper
   - **Message** — multi-line departure-board text (letters, numbers & `. , : ' ! ? - / & @ # % +`)
 - **Airport flutter** — each cell clatters through random characters and the board resolves in a left-to-right wave, just like a real Solari board. Editing a message only re-flips the letters that changed.
 - **10 color palettes** — Onyx, Slate, Midnight, Forest, Crimson, Synthwave, Amber (dark) + Departures, Paper, Mint (light)
+- **9 board fonts** (Google Fonts) across clean, condensed (Oswald, Bebas Neue, Archivo Narrow) and retro/modern (Orbitron, Bungee, VT323, Silkscreen) styles
 - **Realistic flip animation** — 3D fold with hinge line, highlights and shadows
 - **Export & share**
   - **Shareable link** — the full display state is encoded into a short URL (`#s=…`)
   - **Embed widget** — copy-paste `<iframe>` that renders a clean, chrome-free board (the link's `&e=1` flag)
   - **Image** — download the board as a PNG (drawn to canvas, retina resolution)
-- **Premium touches** — fullscreen, auto-hiding controls (kiosk mode), optional mechanical tick sound, responsive auto-sizing, settings saved to `localStorage`
+- **On-screen controls** — each mode's settings live in a bar on the page (no menus to dig through). All controls are hidden by default and reveal on mouse movement, then fade away when idle (kiosk mode); they stay put while you're interacting with them.
+- **Premium touches** — fullscreen, optional mechanical tick sound, responsive auto-sizing, settings saved to `localStorage`
 
 ## Getting started
 
@@ -56,14 +58,16 @@ src/
   components/
     FlipBoard.tsx       Mounts the engine; runs the per-mode render loop
     Toolbar.tsx         Mode switcher + tool buttons
-    SettingsPanel.tsx   Per-mode settings (clock / countdown / message)
+    ModeControls.tsx    On-screen per-mode controls (clock / countdown / message)
     PalettePopover.tsx  Palette swatches
+    FontPopover.tsx     Board font picker (Google Fonts)
     ExportPopover.tsx   Share link, embed code, PNG download
     Icons.tsx           Inline SVG icons
   lib/
     flipEngine.ts       Framework-agnostic split-flap engine (Unit + Board)
     display.ts          Per-mode rendering (clock / countdown / message strings)
     palettes.ts         The 10 color palettes
+    fonts.ts            The board font catalog (Google Fonts)
     config.ts           Types, defaults, URL encode/decode, persistence
     exportImage.ts      Canvas PNG export + share/embed string building
     sound.ts            WebAudio mechanical tick

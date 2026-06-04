@@ -1,4 +1,5 @@
 import { PALETTES, PALETTE_KEYS } from "./palettes";
+import { FONT_KEYS } from "./fonts";
 
 export type Mode = "clock" | "countdown" | "message";
 
@@ -8,6 +9,7 @@ export interface Config {
   clockSeconds: boolean;
   sound: boolean;
   palette: string;
+  font: string;
   cdTarget: string | null; // datetime-local string, for the input
   cdDuration: number; // seconds, fallback when no active countdown
   cdEnd: number | null; // active end timestamp (ms)
@@ -21,6 +23,7 @@ export const DEFAULT_CONFIG: Config = {
   clockSeconds: true,
   sound: false,
   palette: "onyx",
+  font: "default",
   cdTarget: null,
   cdDuration: 600,
   cdEnd: null,
@@ -51,7 +54,11 @@ const MODE_CODE: Record<Mode, string> = { clock: "c", countdown: "d", message: "
 const CODE_MODE: Record<string, Mode> = { c: "clock", d: "countdown", m: "message" };
 
 export function encodeCfg(c: Config): string {
-  const arr: (string | number)[] = [MODE_CODE[c.mode], Math.max(0, PALETTE_KEYS.indexOf(c.palette))];
+  const arr: (string | number)[] = [
+    MODE_CODE[c.mode],
+    Math.max(0, PALETTE_KEYS.indexOf(c.palette)),
+    Math.max(0, FONT_KEYS.indexOf(c.font)),
+  ];
   if (c.mode === "clock") {
     arr.push(c.clockFormat === "12" ? 1 : 0, c.clockSeconds ? 1 : 0);
   } else if (c.mode === "countdown") {
@@ -68,15 +75,16 @@ export function decodeCfg(s: string): Partial<Config> | null {
     if (!Array.isArray(a)) return null;
     const o: Partial<Config> = { mode: CODE_MODE[a[0]] || "clock" };
     if (PALETTE_KEYS[a[1]]) o.palette = PALETTE_KEYS[a[1]];
+    if (FONT_KEYS[a[2]]) o.font = FONT_KEYS[a[2]];
     if (o.mode === "clock") {
-      o.clockFormat = a[2] ? "12" : "24";
-      o.clockSeconds = !!a[3];
+      o.clockFormat = a[3] ? "12" : "24";
+      o.clockSeconds = !!a[4];
     } else if (o.mode === "countdown") {
-      o.cdEnd = a[2] || null;
-      o.cdDuration = a[3] || 600;
-      o.cdDone = a[4] || "TIMES UP";
+      o.cdEnd = a[3] || null;
+      o.cdDuration = a[4] || 600;
+      o.cdDone = a[5] || "TIMES UP";
     } else {
-      o.message = a[2] || " ";
+      o.message = a[3] || " ";
     }
     return o;
   } catch {
