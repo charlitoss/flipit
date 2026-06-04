@@ -770,6 +770,51 @@ body.light .font-opt:hover {
   color: var(--ui-dim);
   white-space: nowrap;
 }
+.style-seg {
+  margin-bottom: 2px;
+}
+/* Color & font don't apply to the LED style. */
+.board-appearance.dimmed {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ---------- LED (14-segment) display ---------- */
+body.led-mode {
+  background: radial-gradient(120% 95% at 50% -10%, #140808, #060303 72%);
+  --led-on: #ff3636;
+  --led-off: #3a10104d;
+}
+body.led-mode #caption-top {
+  color: rgba(255, 95, 95, 0.5);
+}
+.led-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18em;
+  align-items: center;
+  filter: drop-shadow(0 0 0.022em rgba(255, 70, 70, 0.7));
+}
+.led-row {
+  display: flex;
+  gap: 0.06em;
+}
+.led-cell {
+  width: 0.64em;
+  height: 1em;
+  flex: 0 0 auto;
+}
+.led-char {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.led-seg {
+  fill: var(--led-off);
+}
+.led-seg.on {
+  fill: var(--led-on);
+}
 
 /* ---------- Export / share popover ---------- */
 #exportPop {

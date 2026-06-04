@@ -10,9 +10,10 @@ The split-flap mechanism is a small, framework-agnostic TypeScript engine (imper
   - **Clock** — 12/24-hour, optional seconds, live date caption
   - **Countdown** — count down to a date & time or a quick H/M/S duration, with a custom "finished" label
   - **Message** — multi-line departure-board text (letters, numbers & `. , : ' ! ? - / & @ # % +`)
-- **Airport flutter** — each cell clatters through random characters and the board resolves in a left-to-right wave, just like a real Solari board. Editing a message only re-flips the letters that changed.
+- **Two display styles** — the **Split-flap** (Solari) board, or a **digital red LED** 14-segment alphanumeric display
+- **Airport flutter** — each split-flap cell clatters through random characters and the board resolves in a left-to-right wave, just like a real Solari board. Editing a message only re-flips the letters that changed.
 - **10 color palettes** — Onyx, Slate, Midnight, Forest, Crimson, Synthwave, Amber (dark) + Departures, Paper, Mint (light)
-- **9 board fonts** (Google Fonts) across clean, condensed (Oswald, Bebas Neue, Archivo Narrow) and retro/modern (Orbitron, Bungee, VT323, Silkscreen) styles
+- **7 board fonts** (Google Fonts) across clean, condensed (Oswald, Bebas Neue, Archivo Narrow) and modern (Orbitron, Bungee) styles
 - **Realistic flip animation** — 3D fold with hinge line, highlights and shadows
 - **Export & share**
   - **Shareable link** — the full display state is encoded into a short URL (`#s=…`)
@@ -70,7 +71,9 @@ src/
   App.tsx               State, effects, and chrome orchestration
   index.css             Global styles + CSS variables
   components/
-    FlipBoard.tsx       Mounts the engine; runs the per-mode render loop
+    FlipBoard.tsx       Split-flap board: mounts the engine; runs the render loop
+    LedBoard.tsx        Digital red LED (14-segment) board
+    LedChar.tsx         One 14-segment LED character
     Toolbar.tsx         Mode switcher + tool buttons
     ModeControls.tsx    On-screen per-mode controls (clock / countdown / message)
     AppearancePopover.tsx  Combined color palette + board font picker
@@ -78,6 +81,7 @@ src/
     Icons.tsx           Inline SVG icons
   lib/
     flipEngine.ts       Framework-agnostic split-flap engine (Unit + Board)
+    segments.ts         14-segment LED geometry + character map
     display.ts          Per-mode rendering (clock / countdown / message strings)
     palettes.ts         The 10 color palettes
     fonts.ts            The board font catalog (Google Fonts)

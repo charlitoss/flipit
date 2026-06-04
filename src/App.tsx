@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
+import LedBoard from "./components/LedBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
@@ -48,6 +49,10 @@ export default function App() {
   useLayoutEffect(() => {
     applyFont(config.font);
   }, [config.font]);
+
+  useLayoutEffect(() => {
+    document.body.classList.toggle("led-mode", config.style === "led");
+  }, [config.style]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -169,13 +174,17 @@ export default function App() {
   return (
     <>
       <SpeedInsights />
-      <FlipBoard
-        config={config}
-        isEmbed={IS_EMBED}
-        replayNonce={replayNonce}
-        boardRef={boardRef}
-        onReplayRequest={replayMessage}
-      />
+      {config.style === "led" ? (
+        <LedBoard config={config} isEmbed={IS_EMBED} />
+      ) : (
+        <FlipBoard
+          config={config}
+          isEmbed={IS_EMBED}
+          replayNonce={replayNonce}
+          boardRef={boardRef}
+          onReplayRequest={replayMessage}
+        />
+      )}
 
       {!IS_EMBED && (
         <>
@@ -208,8 +217,10 @@ export default function App() {
 
           {openPop === "palette" && (
             <AppearancePopover
+              style={config.style}
               palette={config.palette}
               font={config.font}
+              onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
             />

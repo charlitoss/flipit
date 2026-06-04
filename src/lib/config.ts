@@ -2,6 +2,7 @@ import { PALETTES, PALETTE_KEYS } from "./palettes";
 import { FONT_KEYS } from "./fonts";
 
 export type Mode = "clock" | "countdown" | "message";
+export type DisplayStyle = "flip" | "led";
 
 export interface Config {
   mode: Mode;
@@ -10,6 +11,7 @@ export interface Config {
   sound: boolean;
   palette: string;
   font: string;
+  style: DisplayStyle;
   cdTarget: string | null; // datetime-local string, for the input
   cdDuration: number; // seconds, fallback when no active countdown
   cdEnd: number | null; // active end timestamp (ms)
@@ -24,6 +26,7 @@ export const DEFAULT_CONFIG: Config = {
   sound: false,
   palette: "onyx",
   font: "default",
+  style: "flip",
   cdTarget: null,
   cdDuration: 600,
   cdEnd: null,
