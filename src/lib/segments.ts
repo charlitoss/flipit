@@ -28,7 +28,7 @@ const SEG_ENDS: Record<string, [Pt, Pt]> = {
 const THICK = 6;
 
 // A pointed (hexagonal) segment between two points.
-function hex([p1, p2]: [Pt, Pt], t = THICK): string {
+function hexPts([p1, p2]: [Pt, Pt], t = THICK): Pt[] {
   const dx = p2[0] - p1[0];
   const dy = p2[1] - p1[1];
   const len = Math.hypot(dx, dy) || 1;
@@ -39,7 +39,7 @@ function hex([p1, p2]: [Pt, Pt], t = THICK): string {
   const ht = t / 2;
   const a: Pt = [p1[0] + ux * ht, p1[1] + uy * ht];
   const b: Pt = [p2[0] - ux * ht, p2[1] - uy * ht];
-  const pts: Pt[] = [
+  return [
     p1,
     [a[0] + px * ht, a[1] + py * ht],
     [b[0] + px * ht, b[1] + py * ht],
@@ -47,11 +47,17 @@ function hex([p1, p2]: [Pt, Pt], t = THICK): string {
     [b[0] - px * ht, b[1] - py * ht],
     [a[0] - px * ht, a[1] - py * ht],
   ];
-  return pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
 }
 
 export const SEG_KEYS = Object.keys(SEG_ENDS);
-export const SEG_POLYS = SEG_KEYS.map((key) => ({ key, points: hex(SEG_ENDS[key]) }));
+// `points` (SVG string) for the React char; `pts` (numbers) for the canvas export.
+export const SEG_POLYS = SEG_KEYS.map((key) => {
+  const pts = hexPts(SEG_ENDS[key]);
+  return { key, pts, points: pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ") };
+});
+
+// The char viewBox the geometry is defined in.
+export const CHAR_VB = { w: 64, h: 100 };
 
 // Lit segments per character (compact strings; g1/g2 are two chars).
 const RAW: Record<string, string> = {
