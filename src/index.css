@@ -431,10 +431,18 @@ body.light .icon-btn:hover {
   padding: 8px 10px;
   outline: none;
   transition: border-color 0.15s;
+  /* dark-themed native widgets (date picker icon, number spinner) */
+  color-scheme: dark;
 }
 body.light .controls-card input,
 body.light .controls-card textarea {
   background: rgba(255, 255, 255, 0.6);
+  color-scheme: light;
+}
+/* Keep the date field's calendar icon visible on any theme. */
+.ctl-date::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+  cursor: pointer;
 }
 .controls-card input:focus,
 .controls-card textarea:focus {
@@ -777,8 +785,14 @@ body.light .font-opt:hover {
 /* LED color presets */
 .led-swatches {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.pixel-swatches {
+  grid-template-columns: repeat(6, 1fr);
+}
+.pixel-swatches .led-dot {
+  border-radius: 2px; /* square pixel, not a round LED dot */
 }
 .led-swatch {
   position: relative;
@@ -811,7 +825,7 @@ body.light .font-opt:hover {
 body.led-mode {
   background: radial-gradient(120% 95% at 50% -10%, #121214, #070708 72%);
   --led-on: #ff3a3a;
-  --led-off: rgba(255, 55, 55, 0.13);
+  --led-off: rgba(74, 18, 18, 0.35);
   --led-glow: rgba(255, 80, 80, 0.5);
 }
 body.led-mode #caption-top {
@@ -844,6 +858,237 @@ body.led-mode #caption-top {
 }
 .led-seg.on {
   fill: var(--led-on);
+}
+
+/* ---------- Geist Pixel (Vercel) display ---------- */
+@font-face {
+  font-family: "Geist Pixel Square";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Grid";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Grid.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Pixel Line";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Line.woff2") format("woff2");
+  font-display: swap;
+}
+body.pixel-mode {
+  background: radial-gradient(120% 95% at 50% -12%, #161618, #08080a 72%);
+}
+
+/* Dim, variant-matched background texture behind the display:
+   dots for the square/grid variants, scanlines for the line variant.
+   It slowly drifts to feel alive, and fades toward the edges to frame the board. */
+body.pixel-mode.pv-dots #stage::before,
+body.pixel-mode.pv-lines #stage::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(125% 115% at 50% 44%, #000 30%, transparent 82%);
+  mask-image: radial-gradient(125% 115% at 50% 44%, #000 30%, transparent 82%);
+}
+body.pixel-mode.pv-dots #stage::before {
+  /* square pixels (not round dots), tinted to the color + sized to the font grid */
+  background-image: var(
+    --px-tile,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5'%3E%3Crect x='0.75' y='0.75' width='3.5' height='3.5' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E")
+  );
+  background-size: var(--px-bg, 8px) var(--px-bg, 8px);
+  animation: pv-dots-drift 24s linear infinite;
+}
+body.pixel-mode.pv-lines #stage::before {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--pixel-dim, rgba(250, 250, 250, 0.075)) 0 calc(var(--px-bg, 8px) * 0.2),
+    transparent calc(var(--px-bg, 8px) * 0.2) var(--px-bg, 8px)
+  );
+  animation: pv-lines-drift 13s linear infinite;
+}
+@keyframes pv-dots-drift {
+  0% {
+    background-position: 0 0;
+    opacity: 0.88;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: var(--px-bg, 8px) var(--px-bg, 8px);
+    opacity: 0.88;
+  }
+}
+@keyframes pv-lines-drift {
+  0% {
+    background-position: 0 0;
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 0 var(--px-bg, 8px);
+    opacity: 0.85;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.pixel-mode.pv-dots #stage::before,
+  body.pixel-mode.pv-lines #stage::before {
+    animation: none;
+  }
+}
+/* keep the display above the texture */
+body.pixel-mode #caption-top,
+body.pixel-mode .pixel-board:not(.pixel-measure) {
+  position: relative;
+  z-index: 1;
+}
+
+body.pixel-mode #caption-top {
+  color: rgba(245, 245, 245, 0.42);
+}
+
+/* ---- CRT overlay (Pixel mode only) ---------------------------------------
+   Scanlines + vignette + a subtle flicker, plus chromatic aberration on the
+   glyphs. Tuned for performance: no SVG/url() filters and no mix-blend-mode
+   (both force expensive per-frame recompositing). Aberration is a cheap
+   text-shadow; the flicker is an opacity animation on a promoted layer.
+   The overlay sits above the display (z 10) but below the controls (z 18+). */
+body.crt-on .pixel-board {
+  /* chromatic aberration (scaled to the pixel size) + phosphor bloom — both
+     far cheaper than an SVG filter (only repaint when the glyphs change) */
+  text-shadow:
+    calc(var(--px-bg, 8px) * -0.22) 0 0 rgba(255, 45, 70, 0.75),
+    calc(var(--px-bg, 8px) * 0.22) 0 0 rgba(35, 150, 255, 0.75),
+    0 0 calc(var(--px-bg, 8px) * 0.55) var(--pixel-glow, rgba(255, 255, 255, 0.55));
+}
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+.crt-overlay__scanlines {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.42) 0px,
+    rgba(0, 0, 0, 0.42) 1.5px,
+    transparent 1.5px,
+    transparent 4px
+  );
+  /* promote to its own layer so the flicker animates on the GPU (opacity only) */
+  transform: translateZ(0);
+  will-change: opacity;
+  animation: crt-flicker 110ms steps(2, end) infinite;
+}
+.crt-overlay__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 48%, rgba(0, 0, 0, 0.5) 100%);
+}
+@keyframes crt-flicker {
+  0% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crt-overlay__scanlines {
+    animation: none;
+  }
+}
+.pixel-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12em;
+  color: var(--pixel-on, #fafafa);
+  line-height: 1.05;
+  /* fixed-width digits so the clock/countdown don't shift as numbers change */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+.pixel-row {
+  white-space: pre;
+}
+.pixel-row.grid {
+  white-space: nowrap;
+}
+.pixel-cell {
+  display: inline-block;
+  width: 0.66em;
+  text-align: center;
+}
+.pixel-cell.narrow {
+  width: 0.34em;
+}
+.pixel-measure {
+  position: absolute;
+  left: -99999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Pixel variant picker */
+.pixel-variants {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.pixel-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 6px 10px;
+  background: #0b0b0d;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  color: var(--ui);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+}
+.pixel-opt:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+}
+.pixel-opt.active {
+  border-color: var(--accent);
+}
+.po-sample {
+  font-size: 27px;
+  line-height: 1;
+  color: #fafafa;
+}
+.po-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ui-dim);
+}
+.appearance-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ui-border);
+  font-size: 13px;
+  color: var(--ui);
 }
 
 /* ---------- Export / share popover ---------- */

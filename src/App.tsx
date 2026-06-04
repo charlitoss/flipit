@@ -2,6 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
 import LedBoard from "./components/LedBoard";
+import PixelBoard from "./components/PixelBoard";
+import CrtOverlay from "./components/CrtOverlay";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
@@ -9,9 +11,10 @@ import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
 import { tick, unlockAudio } from "./lib/sound";
-import { applyPaletteVars, PALETTES, PALETTE_KEYS } from "./lib/palettes";
+import { applyPaletteVars, isLightPalette, PALETTES, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
 import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
+import { applyPixel, pixelColorOn } from "./lib/pixel";
 import { buildExport, downloadImage } from "./lib/exportImage";
 import {
   Config,
@@ -53,21 +56,39 @@ export default function App() {
 
   useLayoutEffect(() => {
     document.body.classList.toggle("led-mode", config.style === "led");
-  }, [config.style]);
+    document.body.classList.toggle("pixel-mode", config.style === "pixel");
+    // Background texture follows the pixel variant: dots for square/grid, lines for line.
+    const isPixel = config.style === "pixel";
+    document.body.classList.toggle("pv-dots", isPixel && config.pixelVariant !== "line");
+    document.body.classList.toggle("pv-lines", isPixel && config.pixelVariant === "line");
+    document.body.classList.toggle("crt-on", isPixel && config.crt);
+  }, [config.style, config.pixelVariant, config.crt]);
+
+  // Light chrome only for light palettes in the flip style; LED/Pixel are dark.
+  useLayoutEffect(() => {
+    const light = config.style === "flip" && isLightPalette(config.palette);
+    document.body.classList.toggle("light", light);
+  }, [config.style, config.palette]);
 
   useLayoutEffect(() => {
     applyLed(config.ledColor);
   }, [config.ledColor]);
 
-  // UI accent follows the LED color in LED mode, otherwise the palette accent.
+  useLayoutEffect(() => {
+    applyPixel(config.pixelColor);
+  }, [config.pixelColor]);
+
+  // UI accent follows the LED/pixel color in those styles, otherwise the palette accent.
   // (Runs after applyPaletteVars so it has the final say on --accent.)
   useLayoutEffect(() => {
     const accent =
       config.style === "led"
         ? (LED_BY_KEY[config.ledColor] || LED_COLORS[0]).on
-        : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
+        : config.style === "pixel"
+          ? pixelColorOn(config.pixelColor)
+          : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
     document.body.style.setProperty("--accent", accent);
-  }, [config.style, config.ledColor, config.palette]);
+  }, [config.style, config.ledColor, config.pixelColor, config.palette]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -191,6 +212,11 @@ export default function App() {
       <SpeedInsights />
       {config.style === "led" ? (
         <LedBoard config={config} isEmbed={IS_EMBED} />
+      ) : config.style === "pixel" ? (
+        <>
+          <PixelBoard config={config} isEmbed={IS_EMBED} />
+          {config.crt && <CrtOverlay />}
+        </>
       ) : (
         <FlipBoard
           config={config}
@@ -236,10 +262,16 @@ export default function App() {
               palette={config.palette}
               font={config.font}
               ledColor={config.ledColor}
+              pixelVariant={config.pixelVariant}
+              pixelColor={config.pixelColor}
+              crt={config.crt}
               onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
               onSelectLed={(ledColor) => update({ ledColor })}
+              onSelectPixel={(pixelVariant) => update({ pixelVariant })}
+              onSelectPixelColor={(pixelColor) => update({ pixelColor })}
+              onToggleCrt={(crt) => update({ crt })}
             />
           )}
 
