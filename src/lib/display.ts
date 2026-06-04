@@ -19,7 +19,7 @@ function clockString(format: "12" | "24", seconds: boolean): string {
   let h = d.getHours();
   let suffix = "";
   if (format === "12") {
-    suffix = h >= 12 ? " PM" : " AM";
+    suffix = h >= 12 ? "PM" : "AM"; // no leading space → no empty cell before AM/PM
     h = h % 12;
     if (h === 0) h = 12;
   }
