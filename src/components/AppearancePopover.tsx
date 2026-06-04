@@ -1,7 +1,7 @@
 import { PALETTES, PALETTE_KEYS } from "../lib/palettes";
 import { FONTS, FONT_CATEGORIES } from "../lib/fonts";
 import { LED_COLORS } from "../lib/led";
-import { PIXEL_VARIANTS } from "../lib/pixel";
+import { PIXEL_VARIANTS, PIXEL_COLORS } from "../lib/pixel";
 import type { DisplayStyle } from "../lib/config";
 
 interface Props {
@@ -10,12 +10,14 @@ interface Props {
   font: string;
   ledColor: string;
   pixelVariant: string;
+  pixelColor: string;
   crt: boolean;
   onSelectStyle: (s: DisplayStyle) => void;
   onSelectPalette: (key: string) => void;
   onSelectFont: (key: string) => void;
   onSelectLed: (key: string) => void;
   onSelectPixel: (key: string) => void;
+  onSelectPixelColor: (key: string) => void;
   onToggleCrt: (v: boolean) => void;
 }
 
@@ -25,12 +27,14 @@ export default function AppearancePopover({
   font,
   ledColor,
   pixelVariant,
+  pixelColor,
   crt,
   onSelectStyle,
   onSelectPalette,
   onSelectFont,
   onSelectLed,
   onSelectPixel,
+  onSelectPixelColor,
   onToggleCrt,
 }: Props) {
   return (
@@ -82,6 +86,22 @@ export default function AppearancePopover({
                   A8
                 </span>
                 <span className="po-name">{v.name}</span>
+              </button>
+            ))}
+          </div>
+
+          <h3 className="appearance-section">Color</h3>
+          <div className="led-swatches pixel-swatches">
+            {PIXEL_COLORS.map((c) => (
+              <button
+                key={c.key}
+                className={"led-swatch" + (pixelColor === c.key ? " active" : "")}
+                title={c.name}
+                aria-label={c.name}
+                style={{ ["--sw-on" as string]: c.on } as React.CSSProperties}
+                onClick={() => onSelectPixelColor(c.key)}
+              >
+                <span className="led-dot" />
               </button>
             ))}
           </div>

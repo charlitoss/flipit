@@ -1,7 +1,7 @@
 import { PALETTES, PALETTE_KEYS } from "./palettes";
 import { FONT_KEYS } from "./fonts";
 import { LED_KEYS } from "./led";
-import { PIXEL_KEYS } from "./pixel";
+import { PIXEL_KEYS, PIXEL_COLOR_KEYS } from "./pixel";
 
 export type Mode = "clock" | "countdown" | "message";
 export type DisplayStyle = "flip" | "led" | "pixel";
@@ -17,6 +17,7 @@ export interface Config {
   style: DisplayStyle;
   ledColor: string;
   pixelVariant: string;
+  pixelColor: string;
   crt: boolean; // CRT overlay for the pixel style
   cdTarget: string | null; // datetime-local string, for the input
   cdDuration: number; // seconds, fallback when no active countdown
@@ -35,6 +36,7 @@ export const DEFAULT_CONFIG: Config = {
   style: "flip",
   ledColor: "red",
   pixelVariant: "square",
+  pixelColor: "white",
   crt: true,
   cdTarget: null,
   cdDuration: 600,
@@ -74,6 +76,7 @@ export function encodeCfg(c: Config): string {
     Math.max(0, LED_KEYS.indexOf(c.ledColor)),
     Math.max(0, PIXEL_KEYS.indexOf(c.pixelVariant)),
     c.crt ? 1 : 0,
+    Math.max(0, PIXEL_COLOR_KEYS.indexOf(c.pixelColor)),
   ];
   if (c.mode === "clock") {
     arr.push(c.clockFormat === "12" ? 1 : 0, c.clockSeconds ? 1 : 0);
@@ -96,15 +99,16 @@ export function decodeCfg(s: string): Partial<Config> | null {
     if (LED_KEYS[a[4]]) o.ledColor = LED_KEYS[a[4]];
     if (PIXEL_KEYS[a[5]]) o.pixelVariant = PIXEL_KEYS[a[5]];
     o.crt = a[6] === undefined ? true : !!a[6];
+    if (PIXEL_COLOR_KEYS[a[7]]) o.pixelColor = PIXEL_COLOR_KEYS[a[7]];
     if (o.mode === "clock") {
-      o.clockFormat = a[7] ? "12" : "24";
-      o.clockSeconds = !!a[8];
+      o.clockFormat = a[8] ? "12" : "24";
+      o.clockSeconds = !!a[9];
     } else if (o.mode === "countdown") {
-      o.cdEnd = a[7] || null;
-      o.cdDuration = a[8] || 600;
-      o.cdDone = a[9] || "TIMES UP";
+      o.cdEnd = a[8] || null;
+      o.cdDuration = a[9] || 600;
+      o.cdDone = a[10] || "TIMES UP";
     } else {
-      o.message = a[7] || " ";
+      o.message = a[8] || " ";
     }
     return o;
   } catch {

@@ -14,6 +14,7 @@ import { tick, unlockAudio } from "./lib/sound";
 import { applyPaletteVars, isLightPalette, PALETTES, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
 import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
+import { applyPixel, pixelColorOn } from "./lib/pixel";
 import { buildExport, downloadImage } from "./lib/exportImage";
 import {
   Config,
@@ -73,17 +74,21 @@ export default function App() {
     applyLed(config.ledColor);
   }, [config.ledColor]);
 
-  // UI accent follows the LED color in LED mode, otherwise the palette accent.
+  useLayoutEffect(() => {
+    applyPixel(config.pixelColor);
+  }, [config.pixelColor]);
+
+  // UI accent follows the LED/pixel color in those styles, otherwise the palette accent.
   // (Runs after applyPaletteVars so it has the final say on --accent.)
   useLayoutEffect(() => {
     const accent =
       config.style === "led"
         ? (LED_BY_KEY[config.ledColor] || LED_COLORS[0]).on
         : config.style === "pixel"
-          ? "#fafafa"
+          ? pixelColorOn(config.pixelColor)
           : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
     document.body.style.setProperty("--accent", accent);
-  }, [config.style, config.ledColor, config.palette]);
+  }, [config.style, config.ledColor, config.pixelColor, config.palette]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -258,12 +263,14 @@ export default function App() {
               font={config.font}
               ledColor={config.ledColor}
               pixelVariant={config.pixelVariant}
+              pixelColor={config.pixelColor}
               crt={config.crt}
               onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
               onSelectLed={(ledColor) => update({ ledColor })}
               onSelectPixel={(pixelVariant) => update({ pixelVariant })}
+              onSelectPixelColor={(pixelColor) => update({ pixelColor })}
               onToggleCrt={(crt) => update({ crt })}
             />
           )}

@@ -788,6 +788,12 @@ body.light .font-opt:hover {
   grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
+.pixel-swatches {
+  grid-template-columns: repeat(6, 1fr);
+}
+.pixel-swatches .led-dot {
+  border-radius: 2px; /* square pixel, not a round LED dot */
+}
 .led-swatch {
   position: relative;
   aspect-ratio: 1;
@@ -888,15 +894,18 @@ body.pixel-mode.pv-lines #stage::before {
   mask-image: radial-gradient(125% 115% at 50% 44%, #000 30%, transparent 82%);
 }
 body.pixel-mode.pv-dots #stage::before {
-  /* square pixels (not round dots), sized to the font's pixel grid (--px-bg) */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5'%3E%3Crect x='0.75' y='0.75' width='3.5' height='3.5' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E");
+  /* square pixels (not round dots), tinted to the color + sized to the font grid */
+  background-image: var(
+    --px-tile,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5'%3E%3Crect x='0.75' y='0.75' width='3.5' height='3.5' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E")
+  );
   background-size: var(--px-bg, 8px) var(--px-bg, 8px);
   animation: pv-dots-drift 24s linear infinite;
 }
 body.pixel-mode.pv-lines #stage::before {
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(250, 250, 250, 0.075) 0 calc(var(--px-bg, 8px) * 0.2),
+    var(--pixel-dim, rgba(250, 250, 250, 0.075)) 0 calc(var(--px-bg, 8px) * 0.2),
     transparent calc(var(--px-bg, 8px) * 0.2) var(--px-bg, 8px)
   );
   animation: pv-lines-drift 13s linear infinite;
@@ -945,18 +954,14 @@ body.pixel-mode #caption-top {
 }
 
 /* ---- CRT overlay (Pixel mode only) ---------------------------------------
-   Scanlines + RGB sub-pixel stripes + flicker + vignette, plus a chromatic
-   aberration filter on the board. Pure CSS + SVG. The overlay sits above the
-   display (z 10) but below the controls (z 18+), so the chrome stays crisp. */
-body.crt-on #stage {
-  filter: url(#crt-rgb-shift) contrast(1.05) brightness(1.02);
-}
-.crt-svg-defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  pointer-events: none;
+   Scanlines + vignette + a subtle flicker, plus chromatic aberration on the
+   glyphs. Tuned for performance: no SVG/url() filters and no mix-blend-mode
+   (both force expensive per-frame recompositing). Aberration is a cheap
+   text-shadow; the flicker is an opacity animation on a promoted layer.
+   The overlay sits above the display (z 10) but below the controls (z 18+). */
+body.crt-on .pixel-board {
+  /* chromatic aberration — red/blue split, far cheaper than an SVG filter */
+  text-shadow: -0.6px 0 0 rgba(255, 50, 70, 0.5), 0.6px 0 0 rgba(40, 150, 255, 0.5);
 }
 .crt-overlay {
   position: fixed;
@@ -970,31 +975,15 @@ body.crt-on #stage {
   inset: 0;
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.21) 0px,
-    rgba(0, 0, 0, 0.21) 1px,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
     transparent 1px,
     transparent 3px
   );
-  mix-blend-mode: multiply;
-}
-.crt-overlay__scanlines::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(255, 0, 80, 0.06) 0px,
-    rgba(0, 255, 120, 0.06) 1px,
-    rgba(0, 120, 255, 0.06) 2px
-  );
-  mix-blend-mode: screen;
-}
-.crt-overlay__flicker {
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.05);
-  mix-blend-mode: overlay;
-  animation: crt-flicker 110ms steps(2) infinite;
+  /* promote to its own layer so the flicker animates on the GPU (opacity only) */
+  transform: translateZ(0);
+  will-change: opacity;
+  animation: crt-flicker 120ms steps(2, end) infinite;
 }
 .crt-overlay__vignette {
   position: absolute;
@@ -1003,17 +992,17 @@ body.crt-on #stage {
 }
 @keyframes crt-flicker {
   0% {
-    opacity: 0.85;
+    opacity: 0.92;
   }
   50% {
     opacity: 1;
   }
   100% {
-    opacity: 0.92;
+    opacity: 0.95;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .crt-overlay__flicker {
+  .crt-overlay__scanlines {
     animation: none;
   }
 }
@@ -1022,7 +1011,7 @@ body.crt-on #stage {
   flex-direction: column;
   align-items: center;
   gap: 0.12em;
-  color: #fafafa;
+  color: var(--pixel-on, #fafafa);
   line-height: 1.05;
   /* fixed-width digits so the clock/countdown don't shift as numbers change */
   font-variant-numeric: tabular-nums;

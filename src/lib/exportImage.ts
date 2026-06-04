@@ -3,7 +3,7 @@ import { PALETTES } from "./palettes";
 import { FONT_BY_KEY } from "./fonts";
 import { LED_BY_KEY, LED_COLORS } from "./led";
 import { SEG_POLYS, litSegments, CHAR_VB } from "./segments";
-import { pixelFamily } from "./pixel";
+import { pixelFamily, pixelColorOn } from "./pixel";
 import { getDisplayState } from "./display";
 import { Config, shareURL } from "./config";
 
@@ -288,7 +288,7 @@ function drawPixelToCanvas(config: Config, scale: number): HTMLCanvasElement {
   ctx.fillRect(0, 0, W, H);
 
   ctx.font = `${F}px "${family}", monospace`;
-  ctx.fillStyle = "#fafafa";
+  ctx.fillStyle = pixelColorOn(config.pixelColor);
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   let y = margin + PIXEL_LINE_H / 2;
