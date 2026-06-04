@@ -3,12 +3,10 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
-import PalettePopover from "./components/PalettePopover";
-import FontPopover from "./components/FontPopover";
+import AppearancePopover from "./components/AppearancePopover";
 import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
-import { renderMessage } from "./lib/display";
 import { tick } from "./lib/sound";
 import { applyPaletteVars, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
@@ -22,20 +20,17 @@ import {
 } from "./lib/config";
 
 const { config: INITIAL, isEmbed: IS_EMBED, hadUrlCfg: HAD_URL_CFG } = getInitial();
-const noop = () => {};
 
-type Pop = "none" | "palette" | "font" | "export";
+type Pop = "none" | "palette" | "export";
 
 export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
   const [openPop, setOpenPop] = useState<Pop>("none");
-  const [caption, setCaption] = useState("");
+  const [replayNonce, setReplayNonce] = useState(0);
 
   const boardRef = useRef<Board | null>(null);
   const openPopRef = useRef<Pop>(openPop);
   openPopRef.current = openPop;
-  const configRef = useRef(config);
-  configRef.current = config;
 
   const update = useCallback((patch: Partial<Config>) => {
     setConfig((c) => ({ ...c, ...patch }));
@@ -88,13 +83,8 @@ export default function App() {
     setConfig((c) => ({ ...c, cdEnd: null }));
   }, []);
 
-  // Replay the airport flutter for the message currently on the board.
-  const replayMessage = useCallback(() => {
-    const b = boardRef.current;
-    if (!b) return;
-    b.forceRelayout();
-    renderMessage(b, configRef.current.message, setCaption);
-  }, []);
+  // Bump a nonce to replay the airport flutter for the current message.
+  const replayMessage = useCallback(() => setReplayNonce((n) => n + 1), []);
 
   // ----- Keyboard shortcuts (skip in embed) -----
   useEffect(() => {
@@ -177,9 +167,11 @@ export default function App() {
       <FlipBoard
         config={config}
         soundOn={config.sound}
+        isEmbed={IS_EMBED}
+        replayNonce={replayNonce}
         boardRef={boardRef}
-        onCaption={IS_EMBED ? noop : setCaption}
         onCountdownFinish={onCountdownFinish}
+        onReplayRequest={replayMessage}
       />
 
       {!IS_EMBED && (
@@ -192,15 +184,12 @@ export default function App() {
             </p>
           </header>
 
-          <div id="caption">{caption}</div>
-
           <Toolbar
             mode={config.mode}
             sound={config.sound}
             onMode={onMode}
             onToggleSound={toggleSound}
-            onTogglePalette={() => togglePop("palette")}
-            onToggleFont={() => togglePop("font")}
+            onToggleAppearance={() => togglePop("palette")}
             onFullscreen={fullscreen}
             onToggleExport={() => togglePop("export")}
           />
@@ -211,19 +200,16 @@ export default function App() {
             onClockSeconds={(clockSeconds) => update({ clockSeconds })}
             onStartCountdown={(patch) => update(patch)}
             onMessageChange={(message) => update({ message })}
-            onMessageDisplay={(message) => update({ message })}
             onReplay={replayMessage}
           />
 
           {openPop === "palette" && (
-            <PalettePopover
+            <AppearancePopover
               palette={config.palette}
-              onSelect={(palette) => update({ palette })}
+              font={config.font}
+              onSelectPalette={(palette) => update({ palette })}
+              onSelectFont={(font) => update({ font })}
             />
-          )}
-
-          {openPop === "font" && (
-            <FontPopover font={config.font} onSelect={(font) => update({ font })} />
           )}
 
           {openPop === "export" && exportData && (

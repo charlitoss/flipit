@@ -29,18 +29,24 @@ function clockString(format: "12" | "24", seconds: boolean): string {
   return s;
 }
 
+// setCaption(above, below): `above` renders over the board, `below` under it.
+type SetCaption = (above: string, below: string) => void;
+
 export function renderClock(
   board: Board,
   format: "12" | "24",
   seconds: boolean,
-  setCaption: (s: string) => void
+  setCaption: SetCaption
 ): void {
   const str = clockString(format, seconds);
   board.setLayout([str], buildSepCols(str));
   board.render([str]);
-  setCaption(
-    new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
-  );
+  const date = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+  setCaption(date, ""); // date above the clock
 }
 
 // ---------- Countdown ----------
@@ -57,7 +63,7 @@ function countdownString(remainingSec: number): string {
 export function renderCountdown(
   board: Board,
   cd: Pick<Config, "cdEnd" | "cdDuration" | "cdDone">,
-  setCaption: (s: string) => void,
+  setCaption: SetCaption,
   onFinish: () => void,
   sound: boolean
 ): void {
@@ -65,7 +71,7 @@ export function renderCountdown(
     const str = countdownString(cd.cdDuration);
     board.setLayout([str], buildSepCols(str));
     board.render([str]);
-    setCaption("Set a target, then press Start");
+    setCaption("", ""); // no instructional text
     return;
   }
   const remaining = (cd.cdEnd - Date.now()) / 1000;
@@ -73,7 +79,7 @@ export function renderCountdown(
     const done = sanitize(cd.cdDone).trim() || "DONE";
     board.setLayout([done]);
     board.render([done], true); // flutter into the finished label
-    setCaption("Finished");
+    setCaption("", "Finished");
     onFinish();
     if (sound) {
       tick();
@@ -86,7 +92,7 @@ export function renderCountdown(
   board.setLayout([str], buildSepCols(str));
   board.render([str]);
   const end = new Date(cd.cdEnd);
-  setCaption("Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+  setCaption("", "Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
 }
 
 // ---------- Message ----------
@@ -104,9 +110,9 @@ export function layoutMessage(text: string): string[] {
   return padded.length ? padded : [" "];
 }
 
-export function renderMessage(board: Board, message: string, setCaption: (s: string) => void): void {
+export function renderMessage(board: Board, message: string, setCaption: SetCaption): void {
   const lines = layoutMessage(message);
   board.setLayout(lines);
   board.render(lines, true); // airport-style flutter
-  setCaption("Message");
+  setCaption("", "");
 }

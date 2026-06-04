@@ -73,8 +73,7 @@ src/
     FlipBoard.tsx       Mounts the engine; runs the per-mode render loop
     Toolbar.tsx         Mode switcher + tool buttons
     ModeControls.tsx    On-screen per-mode controls (clock / countdown / message)
-    PalettePopover.tsx  Palette swatches
-    FontPopover.tsx     Board font picker (Google Fonts)
+    AppearancePopover.tsx  Combined color palette + board font picker
     ExportPopover.tsx   Share link, embed code, PNG download
     Icons.tsx           Inline SVG icons
   lib/

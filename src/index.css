@@ -68,9 +68,24 @@ body.idle {
   position: fixed;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: clamp(10px, 2.5vh, 24px);
   padding: clamp(12px, 4vw, 64px);
+}
+#stage.tappable {
+  cursor: pointer;
+}
+
+/* Caption shown above the board (e.g. the date on the clock). */
+#caption-top {
+  text-align: center;
+  font-size: clamp(11px, 1.4vw, 15px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ui-dim);
+  pointer-events: none;
 }
 
 /* ---------- Flip board ---------- */
@@ -454,6 +469,9 @@ body.light .controls-card textarea {
   align-items: flex-start;
   gap: 10px;
 }
+.msg-row > .ctl-label {
+  padding-top: 13px;
+}
 .ctl-msg {
   width: clamp(180px, 38vw, 340px);
   min-height: 40px;
@@ -486,12 +504,13 @@ body.light .controls-card textarea {
 .replay-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  justify-content: center;
+  height: 40px;
+  padding: 0 12px;
 }
 .replay-btn svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 /* ---------- Settings primitives ---------- */
@@ -633,7 +652,7 @@ body.light .field textarea {
   position: fixed;
   top: 64px;
   right: clamp(16px, 3vw, 32px);
-  width: min(296px, calc(100vw - 32px));
+  width: min(300px, calc(100vw - 32px));
   background: var(--ui-panel);
   border: 1px solid var(--ui-border);
   border-radius: 18px;
@@ -644,6 +663,8 @@ body.light .field textarea {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
   transform-origin: top right;
   animation: pop-in 0.2s ease;
+  max-height: calc(100vh - 88px);
+  overflow: auto;
 }
 #palettePop h3 {
   font-size: 12px;
@@ -652,6 +673,9 @@ body.light .field textarea {
   color: var(--ui-dim);
   margin-bottom: 14px;
   font-weight: 700;
+}
+#palettePop h3.appearance-section {
+  margin-top: 20px;
 }
 .swatches {
   display: grid;
@@ -703,33 +727,7 @@ body.light .field textarea {
   box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.25);
 }
 
-/* ---------- Font popover ---------- */
-#fontPop {
-  position: fixed;
-  top: 64px;
-  right: clamp(16px, 3vw, 32px);
-  width: min(300px, calc(100vw - 32px));
-  background: var(--ui-panel);
-  border: 1px solid var(--ui-border);
-  border-radius: 18px;
-  padding: 18px;
-  z-index: 26;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
-  transform-origin: top right;
-  animation: pop-in 0.2s ease;
-  max-height: calc(100vh - 88px);
-  overflow: auto;
-}
-#fontPop h3 {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--ui-dim);
-  margin-bottom: 14px;
-  font-weight: 700;
-}
+/* ---------- Font options (inside the appearance popover) ---------- */
 .font-cat {
   font-size: 10px;
   letter-spacing: 0.16em;

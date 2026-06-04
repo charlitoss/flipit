@@ -1,13 +1,12 @@
 import type { Mode } from "../lib/config";
-import { SoundIcon, PaletteIcon, FontIcon, FullscreenIcon, ShareIcon } from "./Icons";
+import { SoundOnIcon, SoundOffIcon, PaletteIcon, FullscreenIcon, ShareIcon } from "./Icons";
 
 interface Props {
   mode: Mode;
   sound: boolean;
   onMode: (m: Mode) => void;
   onToggleSound: () => void;
-  onTogglePalette: () => void;
-  onToggleFont: () => void;
+  onToggleAppearance: () => void;
   onFullscreen: () => void;
   onToggleExport: () => void;
 }
@@ -23,8 +22,7 @@ export default function Toolbar({
   sound,
   onMode,
   onToggleSound,
-  onTogglePalette,
-  onToggleFont,
+  onToggleAppearance,
   onFullscreen,
   onToggleExport,
 }: Props) {
@@ -44,16 +42,18 @@ export default function Toolbar({
       <div className="tools">
         <button
           className={"icon-btn" + (sound ? " on" : "")}
-          title="Sound"
+          title={sound ? "Sound on" : "Sound off"}
           onClick={onToggleSound}
         >
-          <SoundIcon />
+          {sound ? <SoundOnIcon /> : <SoundOffIcon />}
         </button>
-        <button className="icon-btn" title="Color palette" data-pop-trigger onClick={onTogglePalette}>
+        <button
+          className="icon-btn"
+          title="Color &amp; font"
+          data-pop-trigger
+          onClick={onToggleAppearance}
+        >
           <PaletteIcon />
-        </button>
-        <button className="icon-btn" title="Font" data-pop-trigger onClick={onToggleFont}>
-          <FontIcon />
         </button>
         <button className="icon-btn" title="Fullscreen" onClick={onFullscreen}>
           <FullscreenIcon />

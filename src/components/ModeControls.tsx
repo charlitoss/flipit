@@ -8,7 +8,6 @@ interface Props {
   onClockSeconds: (v: boolean) => void;
   onStartCountdown: (patch: Partial<Config>) => void;
   onMessageChange: (text: string) => void;
-  onMessageDisplay: (text: string) => void;
   onReplay: () => void;
 }
 
@@ -53,10 +52,9 @@ function CountdownControls({ config, onStartCountdown }: Props) {
   const [h, setH] = useState(String(Math.floor(dur / 3600)));
   const [m, setM] = useState(String(Math.floor((dur % 3600) / 60)));
   const [s, setS] = useState(String(dur % 60));
-  const [done, setDone] = useState(config.cdDone);
 
   const start = () => {
-    const patch: Partial<Config> = { cdDone: done || "TIMES UP" };
+    const patch: Partial<Config> = {};
     if (target) {
       const t = new Date(target).getTime();
       if (!isNaN(t)) {
@@ -86,10 +84,6 @@ function CountdownControls({ config, onStartCountdown }: Props) {
         <span className="ctl-label">or</span>
         <input className="ctl-date" type="datetime-local" value={target} onChange={(e) => setTarget(e.target.value)} />
       </div>
-      <div className="ctl-group">
-        <span className="ctl-label">Label</span>
-        <input className="ctl-text" type="text" maxLength={20} value={done} onChange={(e) => setDone(e.target.value)} />
-      </div>
       <button className="btn-primary compact" onClick={start}>
         Start
       </button>
@@ -97,7 +91,7 @@ function CountdownControls({ config, onStartCountdown }: Props) {
   );
 }
 
-function MessageControls({ config, onMessageChange, onMessageDisplay, onReplay }: Props) {
+function MessageControls({ config, onMessageChange, onReplay }: Props) {
   const [text, setText] = useState(config.message);
   const timer = useRef<number | undefined>(undefined);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -112,6 +106,7 @@ function MessageControls({ config, onMessageChange, onMessageDisplay, onReplay }
     ta.style.height = ta.scrollHeight + border + "px";
   }, [text]);
 
+  // Live update as you type — no Display button needed.
   const onInput = (v: string) => {
     setText(v);
     window.clearTimeout(timer.current);
@@ -121,6 +116,7 @@ function MessageControls({ config, onMessageChange, onMessageDisplay, onReplay }
   return (
     <div className="msg-controls">
       <div className="msg-row">
+        <span className="ctl-label">Message</span>
         <textarea
           ref={taRef}
           className="ctl-msg"
@@ -133,16 +129,13 @@ function MessageControls({ config, onMessageChange, onMessageDisplay, onReplay }
         <button
           className="btn-ghost compact replay-btn"
           title="Run the animation again"
+          aria-label="Replay animation"
           onClick={onReplay}
         >
           <ReplayIcon />
-          Replay
-        </button>
-        <button className="btn-primary compact" onClick={() => onMessageDisplay(text || " ")}>
-          Display
         </button>
       </div>
-      <div className="ctl-hint">Press Enter for multiple lines.</div>
+      <div className="ctl-hint">Press Enter for multiple lines. Tap the board to replay.</div>
     </div>
   );
 }
