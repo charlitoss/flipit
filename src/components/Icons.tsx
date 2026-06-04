@@ -18,11 +18,11 @@ export function SoundOffIcon() {
   );
 }
 
-// On: just the speaker (no cross).
+// On: just the speaker (no cross), shifted to sit centered in the button.
 export function SoundOnIcon() {
   return (
     <svg viewBox="0 0 24 24" {...stroke}>
-      <path d="M11 5 6 9H2v6h4l5 4z" />
+      <path d="M11 5 6 9H2v6h4l5 4z" transform="translate(5.5 0)" />
     </svg>
   );
 }

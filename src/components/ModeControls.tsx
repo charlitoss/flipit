@@ -115,8 +115,8 @@ function MessageControls({ config, onMessageChange, onReplay }: Props) {
 
   return (
     <div className="msg-controls">
+      <span className="ctl-label">Message</span>
       <div className="msg-row">
-        <span className="ctl-label">Message</span>
         <textarea
           ref={taRef}
           className="ctl-msg"

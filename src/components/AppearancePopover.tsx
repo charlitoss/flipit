@@ -44,7 +44,7 @@ export default function AppearancePopover({
 
       <h3 className="appearance-section">Font</h3>
       {FONT_CATEGORIES.map((cat) => (
-        <div key={cat}>
+        <div className="font-group" key={cat}>
           <div className="font-cat">{cat}</div>
           {FONTS.filter((f) => f.category === cat).map((f) => (
             <button

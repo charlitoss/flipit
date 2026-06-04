@@ -79,7 +79,7 @@ export function renderCountdown(
     const done = sanitize(cd.cdDone).trim() || "DONE";
     board.setLayout([done]);
     board.render([done], true); // flutter into the finished label
-    setCaption("", "Finished");
+    setCaption("Finished", "");
     onFinish();
     if (sound) {
       tick();
@@ -92,7 +92,7 @@ export function renderCountdown(
   board.setLayout([str], buildSepCols(str));
   board.render([str]);
   const end = new Date(cd.cdEnd);
-  setCaption("", "Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+  setCaption("Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), "");
 }
 
 // ---------- Message ----------

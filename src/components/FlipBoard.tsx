@@ -24,9 +24,10 @@ export default function FlipBoard({
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  // Caption text: `above` renders over the board, `below` under it.
-  const [cap, setCap] = useState({ above: "", below: "" });
-  const setCaption = useCallback((above: string, below: string) => setCap({ above, below }), []);
+  // Caption shown above the board (clock date, countdown status). The second
+  // arg is kept for API symmetry but is currently unused.
+  const [capAbove, setCapAbove] = useState("");
+  const setCaption = useCallback((above: string, _below: string) => setCapAbove(above), []);
 
   // Keep the latest sound flag without re-running the loop effects.
   const soundRef = useRef(soundOn);
@@ -113,10 +114,9 @@ export default function FlipBoard({
         className={config.mode === "message" ? "tappable" : ""}
         onClick={onStageClick}
       >
-        {!isEmbed && cap.above && <div id="caption-top">{cap.above}</div>}
+        {!isEmbed && capAbove && <div id="caption-top">{capAbove}</div>}
         <div className="board" ref={rootRef} />
       </div>
-      {!isEmbed && cap.below && <div id="caption">{cap.below}</div>}
     </>
   );
 }

@@ -264,21 +264,6 @@ body.idle {
   }
 }
 
-/* ---------- Caption ---------- */
-#caption {
-  position: fixed;
-  bottom: clamp(16px, 5vh, 48px);
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: clamp(11px, 1.4vw, 15px);
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--ui-dim);
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
 /* ---------- Controls ---------- */
 #topbar {
   position: fixed;
@@ -294,7 +279,6 @@ body.idle {
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 body.idle #topbar,
-body.idle #caption,
 body.idle #modeControls {
   opacity: 0;
   pointer-events: none;
@@ -302,7 +286,6 @@ body.idle #modeControls {
 body.idle #topbar {
   transform: translateY(-8px);
 }
-body.idle #caption,
 body.idle #modeControls {
   transform: translateY(8px);
 }
@@ -392,7 +375,7 @@ body.light .icon-btn:hover {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: clamp(52px, 12vh, 104px);
+  bottom: 16px;
   display: flex;
   justify-content: center;
   padding: 0 16px;
@@ -468,9 +451,6 @@ body.light .controls-card textarea {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-}
-.msg-row > .ctl-label {
-  padding-top: 13px;
 }
 .ctl-msg {
   width: clamp(180px, 38vw, 340px);
@@ -674,8 +654,13 @@ body.light .field textarea {
   margin-bottom: 14px;
   font-weight: 700;
 }
+#palettePop .swatches {
+  margin-bottom: 4px;
+}
 #palettePop h3.appearance-section {
-  margin-top: 20px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ui-border);
 }
 .swatches {
   display: grid;
@@ -728,16 +713,16 @@ body.light .field textarea {
 }
 
 /* ---------- Font options (inside the appearance popover) ---------- */
+.font-group + .font-group {
+  margin-top: 18px;
+}
 .font-cat {
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ui-dim);
   font-weight: 700;
-  margin: 14px 2px 6px;
-}
-.font-cat:first-child {
-  margin-top: 0;
+  margin: 0 2px 8px;
 }
 .font-opt {
   display: flex;
