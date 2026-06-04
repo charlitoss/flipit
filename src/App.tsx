@@ -11,6 +11,7 @@ import { setFlipSound } from "./lib/flipEngine";
 import { tick, unlockAudio } from "./lib/sound";
 import { applyPaletteVars, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
+import { applyLed } from "./lib/led";
 import { buildExport, downloadImage } from "./lib/exportImage";
 import {
   Config,
@@ -53,6 +54,10 @@ export default function App() {
   useLayoutEffect(() => {
     document.body.classList.toggle("led-mode", config.style === "led");
   }, [config.style]);
+
+  useLayoutEffect(() => {
+    applyLed(config.ledColor);
+  }, [config.ledColor]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -220,9 +225,11 @@ export default function App() {
               style={config.style}
               palette={config.palette}
               font={config.font}
+              ledColor={config.ledColor}
               onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
+              onSelectLed={(ledColor) => update({ ledColor })}
             />
           )}
 

@@ -1,5 +1,6 @@
 import { PALETTES, PALETTE_KEYS } from "./palettes";
 import { FONT_KEYS } from "./fonts";
+import { LED_KEYS } from "./led";
 
 export type Mode = "clock" | "countdown" | "message";
 export type DisplayStyle = "flip" | "led";
@@ -12,6 +13,7 @@ export interface Config {
   palette: string;
   font: string;
   style: DisplayStyle;
+  ledColor: string;
   cdTarget: string | null; // datetime-local string, for the input
   cdDuration: number; // seconds, fallback when no active countdown
   cdEnd: number | null; // active end timestamp (ms)
@@ -27,6 +29,7 @@ export const DEFAULT_CONFIG: Config = {
   palette: "onyx",
   font: "default",
   style: "flip",
+  ledColor: "red",
   cdTarget: null,
   cdDuration: 600,
   cdEnd: null,
@@ -61,6 +64,8 @@ export function encodeCfg(c: Config): string {
     MODE_CODE[c.mode],
     Math.max(0, PALETTE_KEYS.indexOf(c.palette)),
     Math.max(0, FONT_KEYS.indexOf(c.font)),
+    c.style === "led" ? 1 : 0,
+    Math.max(0, LED_KEYS.indexOf(c.ledColor)),
   ];
   if (c.mode === "clock") {
     arr.push(c.clockFormat === "12" ? 1 : 0, c.clockSeconds ? 1 : 0);
@@ -79,15 +84,17 @@ export function decodeCfg(s: string): Partial<Config> | null {
     const o: Partial<Config> = { mode: CODE_MODE[a[0]] || "clock" };
     if (PALETTE_KEYS[a[1]]) o.palette = PALETTE_KEYS[a[1]];
     if (FONT_KEYS[a[2]]) o.font = FONT_KEYS[a[2]];
+    o.style = a[3] ? "led" : "flip";
+    if (LED_KEYS[a[4]]) o.ledColor = LED_KEYS[a[4]];
     if (o.mode === "clock") {
-      o.clockFormat = a[3] ? "12" : "24";
-      o.clockSeconds = !!a[4];
+      o.clockFormat = a[5] ? "12" : "24";
+      o.clockSeconds = !!a[6];
     } else if (o.mode === "countdown") {
-      o.cdEnd = a[3] || null;
-      o.cdDuration = a[4] || 600;
-      o.cdDone = a[5] || "TIMES UP";
+      o.cdEnd = a[5] || null;
+      o.cdDuration = a[6] || 600;
+      o.cdDone = a[7] || "TIMES UP";
     } else {
-      o.message = a[3] || " ";
+      o.message = a[5] || " ";
     }
     return o;
   } catch {
