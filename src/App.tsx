@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
@@ -172,6 +173,7 @@ export default function App() {
 
   return (
     <>
+      <SpeedInsights />
       <FlipBoard
         config={config}
         soundOn={config.sound}

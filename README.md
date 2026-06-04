@@ -46,6 +46,7 @@ The app is tuned for discoverability:
 - **Social image** `public/og-image.png` (1200×630), plus `public/favicon.svg`, `public/icon-512.png` and `public/site.webmanifest`.
 - **Crawling**: `public/robots.txt` and `public/sitemap.xml`.
 - **Google Analytics (GA4)**: loaded inline in `index.html` (id `G-Q0SY22CC3C`). The network tag is skipped on `localhost`, so local development isn't tracked.
+- **Vercel Speed Insights** (`@vercel/speed-insights`): real-user Core Web Vitals, collected automatically once deployed on Vercel (inert in local dev).
 
 > **Changing the domain:** the canonical URL `https://flipit-tool.vercel.app/` is referenced in `index.html` (canonical, OG, Twitter, JSON-LD), `public/robots.txt`, and `public/sitemap.xml`. Update it in those files if the domain changes.
 
