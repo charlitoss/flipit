@@ -1,15 +1,18 @@
 import { Board } from "./flipEngine";
 import { sanitize } from "./chars";
-import { tick } from "./sound";
 import type { Config } from "./config";
 
 function pad(n: number, w = 2): string {
   return String(n).padStart(w, "0");
 }
 
+// Columns rendered as transparent spacers (no flip card): the ":" separators
+// and any spaces (e.g. the gap before AM/PM).
 function buildSepCols(str: string): Set<number> {
   const set = new Set<number>();
-  for (let i = 0; i < str.length; i++) if (str[i] === ":") set.add(i);
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === ":" || str[i] === " ") set.add(i);
+  }
   return set;
 }
 
@@ -19,6 +22,8 @@ function clockString(format: "12" | "24", seconds: boolean): string {
   let h = d.getHours();
   let suffix = "";
   if (format === "12") {
+    // The leading space renders as a transparent spacer (see buildSepCols),
+    // giving a gap before AM/PM rather than a blank flip cell.
     suffix = h >= 12 ? " PM" : " AM";
     h = h % 12;
     if (h === 0) h = 12;
@@ -29,18 +34,24 @@ function clockString(format: "12" | "24", seconds: boolean): string {
   return s;
 }
 
+// setCaption(above, below): `above` renders over the board, `below` under it.
+type SetCaption = (above: string, below: string) => void;
+
 export function renderClock(
   board: Board,
   format: "12" | "24",
   seconds: boolean,
-  setCaption: (s: string) => void
+  setCaption: SetCaption
 ): void {
   const str = clockString(format, seconds);
   board.setLayout([str], buildSepCols(str));
   board.render([str]);
-  setCaption(
-    new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
-  );
+  const date = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+  setCaption(date, ""); // date above the clock
 }
 
 // ---------- Countdown ----------
@@ -54,39 +65,32 @@ function countdownString(remainingSec: number): string {
   return pad(h) + ":" + pad(m) + ":" + pad(s);
 }
 
+// Returns true once the countdown has reached zero (held at 00:00:00).
 export function renderCountdown(
   board: Board,
-  cd: Pick<Config, "cdEnd" | "cdDuration" | "cdDone">,
-  setCaption: (s: string) => void,
-  onFinish: () => void,
-  sound: boolean
-): void {
+  cd: Pick<Config, "cdEnd" | "cdDuration">,
+  setCaption: SetCaption
+): boolean {
   if (!cd.cdEnd) {
+    // Idle (never started): preview the configured duration.
     const str = countdownString(cd.cdDuration);
     board.setLayout([str], buildSepCols(str));
     board.render([str]);
-    setCaption("Set a target, then press Start");
-    return;
+    setCaption("", "");
+    return false;
   }
   const remaining = (cd.cdEnd - Date.now()) / 1000;
-  if (remaining <= 0) {
-    const done = sanitize(cd.cdDone).trim() || "DONE";
-    board.setLayout([done]);
-    board.render([done], true); // flutter into the finished label
-    setCaption("Finished");
-    onFinish();
-    if (sound) {
-      tick();
-      setTimeout(tick, 140);
-      setTimeout(tick, 280);
-    }
-    return;
-  }
-  const str = countdownString(remaining);
+  const str = countdownString(remaining); // clamps to 00:00:00 at/after zero
   board.setLayout([str], buildSepCols(str));
   board.render([str]);
+  if (remaining <= 0) {
+    // Hold at 00:00:00 until a new countdown is started.
+    setCaption("Finished", "");
+    return true;
+  }
   const end = new Date(cd.cdEnd);
-  setCaption("Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+  setCaption("Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), "");
+  return false;
 }
 
 // ---------- Message ----------
@@ -104,9 +108,9 @@ export function layoutMessage(text: string): string[] {
   return padded.length ? padded : [" "];
 }
 
-export function renderMessage(board: Board, message: string, setCaption: (s: string) => void): void {
+export function renderMessage(board: Board, message: string, setCaption: SetCaption): void {
   const lines = layoutMessage(message);
   board.setLayout(lines);
   board.render(lines, true); // airport-style flutter
-  setCaption("Message");
+  setCaption("", "");
 }

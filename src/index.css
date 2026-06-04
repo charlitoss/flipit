@@ -68,9 +68,24 @@ body.idle {
   position: fixed;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: clamp(10px, 2.5vh, 24px);
   padding: clamp(12px, 4vw, 64px);
+}
+#stage.tappable {
+  cursor: pointer;
+}
+
+/* Caption shown above the board (e.g. the date on the clock). */
+#caption-top {
+  text-align: center;
+  font-size: clamp(11px, 1.4vw, 15px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ui-dim);
+  pointer-events: none;
 }
 
 /* ---------- Flip board ---------- */
@@ -249,21 +264,6 @@ body.idle {
   }
 }
 
-/* ---------- Caption ---------- */
-#caption {
-  position: fixed;
-  bottom: clamp(16px, 5vh, 48px);
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: clamp(11px, 1.4vw, 15px);
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--ui-dim);
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
 /* ---------- Controls ---------- */
 #topbar {
   position: fixed;
@@ -279,7 +279,6 @@ body.idle {
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 body.idle #topbar,
-body.idle #caption,
 body.idle #modeControls {
   opacity: 0;
   pointer-events: none;
@@ -287,7 +286,6 @@ body.idle #modeControls {
 body.idle #topbar {
   transform: translateY(-8px);
 }
-body.idle #caption,
 body.idle #modeControls {
   transform: translateY(8px);
 }
@@ -377,7 +375,7 @@ body.light .icon-btn:hover {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: clamp(52px, 12vh, 104px);
+  bottom: 16px;
   display: flex;
   justify-content: center;
   padding: 0 16px;
@@ -416,6 +414,10 @@ body.light .icon-btn:hover {
   font-size: 12px;
   color: var(--ui-dim);
   margin-left: -4px;
+}
+/* Standalone "or" separating the two countdown options — extra breathing room. */
+.ctl-or {
+  margin: 0 12px;
 }
 .controls-card input,
 .controls-card textarea {
@@ -486,12 +488,13 @@ body.light .controls-card textarea {
 .replay-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  justify-content: center;
+  height: 40px;
+  padding: 0 12px;
 }
 .replay-btn svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 /* ---------- Settings primitives ---------- */
@@ -633,7 +636,7 @@ body.light .field textarea {
   position: fixed;
   top: 64px;
   right: clamp(16px, 3vw, 32px);
-  width: min(296px, calc(100vw - 32px));
+  width: min(300px, calc(100vw - 32px));
   background: var(--ui-panel);
   border: 1px solid var(--ui-border);
   border-radius: 18px;
@@ -644,6 +647,8 @@ body.light .field textarea {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
   transform-origin: top right;
   animation: pop-in 0.2s ease;
+  max-height: calc(100vh - 88px);
+  overflow: auto;
 }
 #palettePop h3 {
   font-size: 12px;
@@ -652,6 +657,14 @@ body.light .field textarea {
   color: var(--ui-dim);
   margin-bottom: 14px;
   font-weight: 700;
+}
+#palettePop .swatches {
+  margin-bottom: 4px;
+}
+#palettePop h3.appearance-section {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ui-border);
 }
 .swatches {
   display: grid;
@@ -703,32 +716,9 @@ body.light .field textarea {
   box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.25);
 }
 
-/* ---------- Font popover ---------- */
-#fontPop {
-  position: fixed;
-  top: 64px;
-  right: clamp(16px, 3vw, 32px);
-  width: min(300px, calc(100vw - 32px));
-  background: var(--ui-panel);
-  border: 1px solid var(--ui-border);
-  border-radius: 18px;
-  padding: 18px;
-  z-index: 26;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
-  transform-origin: top right;
-  animation: pop-in 0.2s ease;
-  max-height: calc(100vh - 88px);
-  overflow: auto;
-}
-#fontPop h3 {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--ui-dim);
-  margin-bottom: 14px;
-  font-weight: 700;
+/* ---------- Font options (inside the appearance popover) ---------- */
+.font-group + .font-group {
+  margin-top: 18px;
 }
 .font-cat {
   font-size: 10px;
@@ -736,22 +726,20 @@ body.light .field textarea {
   text-transform: uppercase;
   color: var(--ui-dim);
   font-weight: 700;
-  margin: 14px 2px 6px;
-}
-.font-cat:first-child {
-  margin-top: 0;
+  margin: 0 2px 8px;
 }
 .font-opt {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   width: 100%;
+  height: 44px;
   text-align: left;
   background: transparent;
   border: 1px solid var(--ui-border);
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: 0 12px;
   margin-bottom: 6px;
   color: var(--ui);
   cursor: pointer;
@@ -771,7 +759,7 @@ body.light .font-opt:hover {
 }
 .fo-name {
   font-size: 19px;
-  line-height: 1.1;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

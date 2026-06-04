@@ -7,12 +7,22 @@ const stroke = {
   strokeLinejoin: "round" as const,
 };
 
-export function SoundIcon() {
+// Muted (default): speaker with a cross.
+export function SoundOffIcon() {
   return (
     <svg viewBox="0 0 24 24" {...stroke}>
       <path d="M11 5 6 9H2v6h4l5 4z" />
       <line x1="22" y1="9" x2="16" y2="15" />
       <line x1="16" y1="9" x2="22" y2="15" />
+    </svg>
+  );
+}
+
+// On: just the speaker (no cross), shifted to sit centered in the button.
+export function SoundOnIcon() {
+  return (
+    <svg viewBox="0 0 24 24" {...stroke}>
+      <path d="M11 5 6 9H2v6h4l5 4z" transform="translate(5.5 0)" />
     </svg>
   );
 }
@@ -43,16 +53,6 @@ export function ShareIcon() {
       <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
       <polyline points="8 7 12 3 16 7" />
       <line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  );
-}
-
-export function FontIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...stroke}>
-      <polyline points="4 7 4 4 20 4 20 7" />
-      <line x1="9" y1="20" x2="15" y2="20" />
-      <line x1="12" y1="4" x2="12" y2="20" />
     </svg>
   );
 }

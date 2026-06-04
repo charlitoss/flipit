@@ -1,22 +1,30 @@
-import { MutableRefObject, useEffect, useRef } from "react";
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Board } from "../lib/flipEngine";
 import { renderClock, renderCountdown, renderMessage } from "../lib/display";
+import { alarm } from "../lib/sound";
 import type { Config } from "../lib/config";
 
 interface Props {
   config: Config;
-  soundOn: boolean;
+  isEmbed: boolean;
+  replayNonce: number;
   boardRef: MutableRefObject<Board | null>;
-  onCaption: (s: string) => void;
-  onCountdownFinish: () => void;
+  onReplayRequest: () => void;
 }
 
-export default function FlipBoard({ config, soundOn, boardRef, onCaption, onCountdownFinish }: Props) {
+export default function FlipBoard({
+  config,
+  isEmbed,
+  replayNonce,
+  boardRef,
+  onReplayRequest,
+}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  // Keep the latest sound flag without re-running the loop effects.
-  const soundRef = useRef(soundOn);
-  soundRef.current = soundOn;
+  // Caption shown above the board (clock date, countdown status). The second
+  // arg is kept for API symmetry but is currently unused.
+  const [capAbove, setCapAbove] = useState("");
+  const setCaption = useCallback((above: string, _below: string) => setCapAbove(above), []);
 
   // Create the engine once and keep it sized to the viewport.
   useEffect(() => {
@@ -45,46 +53,66 @@ export default function FlipBoard({ config, soundOn, boardRef, onCaption, onCoun
     if (config.mode !== "clock") return;
     const board = boardRef.current;
     if (!board) return;
-    const run = () => renderClock(board, config.clockFormat, config.clockSeconds, onCaption);
+    const run = () => renderClock(board, config.clockFormat, config.clockSeconds, setCaption);
     board.forceRelayout(); // format/seconds changes rebuild for a clean swap
     run();
     const id = window.setInterval(run, 250);
     return () => window.clearInterval(id);
-  }, [config.mode, config.clockFormat, config.clockSeconds, boardRef, onCaption]);
+  }, [config.mode, config.clockFormat, config.clockSeconds, boardRef, setCaption]);
 
-  // Countdown loop.
+  // Countdown loop. The board holds at 00:00:00 once finished; the alarm fires
+  // once, on the transition to zero (not if it loads already expired).
   useEffect(() => {
     if (config.mode !== "countdown") return;
     const board = boardRef.current;
     if (!board) return;
-    const cd = { cdEnd: config.cdEnd, cdDuration: config.cdDuration, cdDone: config.cdDone };
-    const run = () => renderCountdown(board, cd, onCaption, onCountdownFinish, soundRef.current);
+    const cd = { cdEnd: config.cdEnd, cdDuration: config.cdDuration };
+    let sawRunning = false;
+    let firedAlarm = false;
+    const run = () => {
+      const atZero = renderCountdown(board, cd, setCaption);
+      if (!atZero) {
+        sawRunning = true;
+      } else if (sawRunning && !firedAlarm) {
+        firedAlarm = true;
+        alarm();
+      }
+    };
     board.forceRelayout();
     run();
     const id = window.setInterval(run, 250);
     return () => window.clearInterval(id);
-  }, [
-    config.mode,
-    config.cdEnd,
-    config.cdDuration,
-    config.cdDone,
-    boardRef,
-    onCaption,
-    onCountdownFinish,
-  ]);
+  }, [config.mode, config.cdEnd, config.cdDuration, boardRef, setCaption]);
 
-  // Message: render on text change WITHOUT forcing relayout, so only the
-  // letters that actually changed flip (entering the mode already relaid out).
+  // Message: render on text change without forcing a relayout (so only the
+  // changed letters flip). A replayNonce bump forces a full rebuild + flutter.
+  const prevNonce = useRef(replayNonce);
   useEffect(() => {
     if (config.mode !== "message") return;
     const board = boardRef.current;
     if (!board) return;
-    renderMessage(board, config.message, onCaption);
-  }, [config.mode, config.message, boardRef, onCaption]);
+    if (replayNonce !== prevNonce.current) {
+      board.forceRelayout();
+      prevNonce.current = replayNonce;
+    }
+    renderMessage(board, config.message, setCaption);
+  }, [config.mode, config.message, replayNonce, boardRef, setCaption]);
+
+  // Tapping the board replays the message animation.
+  const onStageClick = () => {
+    if (config.mode === "message") onReplayRequest();
+  };
 
   return (
-    <div id="stage">
-      <div className="board" ref={rootRef} />
-    </div>
+    <>
+      <div
+        id="stage"
+        className={config.mode === "message" ? "tappable" : ""}
+        onClick={onStageClick}
+      >
+        {!isEmbed && capAbove && <div id="caption-top">{capAbove}</div>}
+        <div className="board" ref={rootRef} />
+      </div>
+    </>
   );
 }

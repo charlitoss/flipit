@@ -174,7 +174,20 @@ export class Board {
     const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
     const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
     const availW = stage.clientWidth - padX;
-    const availH = stage.clientHeight - padY;
+    let availH = stage.clientHeight - padY;
+    // Reserve space for any siblings stacked in the stage (e.g. a caption above
+    // the board) plus the flex gaps between them, so the board still fits.
+    let siblingsH = 0;
+    let others = 0;
+    for (const child of Array.from(stage.children)) {
+      if (child === this.root) continue;
+      siblingsH += (child as HTMLElement).getBoundingClientRect().height;
+      others++;
+    }
+    if (others > 0) {
+      const gap = parseFloat(cs.rowGap || cs.gap || "0") || 0;
+      availH -= siblingsH + gap * others;
+    }
     const cols = this.maxCols;
     const rows = this.rows.length || 1;
     // unit width 0.78em, gap 0.09em, unit height 1.12em, row gap 0.16em (em == font-size)
