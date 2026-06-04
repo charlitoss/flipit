@@ -819,7 +819,7 @@ body.light .font-opt:hover {
 body.led-mode {
   background: radial-gradient(120% 95% at 50% -10%, #121214, #070708 72%);
   --led-on: #ff3a3a;
-  --led-off: rgba(74, 18, 18, 0.9);
+  --led-off: rgba(74, 18, 18, 0.35);
   --led-glow: rgba(255, 80, 80, 0.5);
 }
 body.led-mode #caption-top {
