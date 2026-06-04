@@ -110,8 +110,9 @@ body.idle {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.82em;
-  font-weight: 700;
+  font-family: var(--board-font, var(--font));
+  font-size: calc(0.82em * var(--glyph-scale, 1));
+  font-weight: var(--board-weight, 700);
   line-height: 1;
   letter-spacing: -0.01em;
   color: var(--glyph);
@@ -687,6 +688,85 @@ body.light .field textarea {
   border-radius: 50%;
   background: var(--sw-accent);
   box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Font popover ---------- */
+#fontPop {
+  position: fixed;
+  top: 64px;
+  right: clamp(16px, 3vw, 32px);
+  width: min(300px, calc(100vw - 32px));
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-border);
+  border-radius: 18px;
+  padding: 18px;
+  z-index: 26;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  transform-origin: top right;
+  animation: pop-in 0.2s ease;
+  max-height: calc(100vh - 88px);
+  overflow: auto;
+}
+#fontPop h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ui-dim);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+.font-cat {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ui-dim);
+  font-weight: 700;
+  margin: 14px 2px 6px;
+}
+.font-cat:first-child {
+  margin-top: 0;
+}
+.font-opt {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  color: var(--ui);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.font-opt:last-child {
+  margin-bottom: 0;
+}
+.font-opt:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+body.light .font-opt:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.font-opt.active {
+  border-color: var(--accent);
+}
+.fo-name {
+  font-size: 19px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fo-sample {
+  font-size: 15px;
+  color: var(--ui-dim);
+  white-space: nowrap;
 }
 
 /* ---------- Export / share popover ---------- */

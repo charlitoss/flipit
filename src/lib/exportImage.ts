@@ -1,5 +1,6 @@
 import { Board, Snapshot } from "./flipEngine";
 import { PALETTES } from "./palettes";
+import { FONT_BY_KEY } from "./fonts";
 import { Config, shareURL } from "./config";
 
 interface Metrics {
@@ -61,11 +62,12 @@ export function buildExport(config: Config, board: Board | null): { link: string
   return { link, embed };
 }
 
-function drawBoardToCanvas(board: Board, palette: string, scale: number): HTMLCanvasElement {
+function drawBoardToCanvas(board: Board, config: Config, scale: number): HTMLCanvasElement {
   const snap = board.snapshot();
   const m = boardMetrics(snap);
-  const pal = (PALETTES[palette] || PALETTES.onyx).vars;
-  const FONT = '"Helvetica Neue", Arial, sans-serif';
+  const pal = (PALETTES[config.palette] || PALETTES.onyx).vars;
+  const fnt = FONT_BY_KEY[config.font] || FONT_BY_KEY.default;
+  const glyphPx = m.glyph * fnt.scale;
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(m.W * scale);
   canvas.height = Math.round(m.H * scale);
@@ -111,10 +113,10 @@ function drawBoardToCanvas(board: Board, palette: string, scale: number): HTMLCa
       // glyph
       if (c.ch && c.ch !== " ") {
         ctx.fillStyle = pal["glyph"];
-        ctx.font = `700 ${m.glyph}px ${FONT}`;
+        ctx.font = `${fnt.weight} ${glyphPx}px ${fnt.stack}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(c.ch, x + w / 2, y + m.uH / 2 + m.glyph * 0.02);
+        ctx.fillText(c.ch, x + w / 2, y + m.uH / 2 + glyphPx * 0.02);
       }
       x += w + m.gap;
     });
@@ -123,8 +125,16 @@ function drawBoardToCanvas(board: Board, palette: string, scale: number): HTMLCa
   return canvas;
 }
 
-export function downloadImage(board: Board, config: Config): void {
-  const canvas = drawBoardToCanvas(board, config.palette, 2);
+export async function downloadImage(board: Board, config: Config): Promise<void> {
+  // Make sure the selected web font is loaded before rasterizing.
+  if (document.fonts?.ready) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      /* ignore */
+    }
+  }
+  const canvas = drawBoardToCanvas(board, config, 2);
   canvas.toBlob((blob) => {
     if (!blob) return;
     const url = URL.createObjectURL(blob);

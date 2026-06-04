@@ -3,12 +3,14 @@ import FlipBoard from "./components/FlipBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import PalettePopover from "./components/PalettePopover";
+import FontPopover from "./components/FontPopover";
 import ExportPopover from "./components/ExportPopover";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
 import { renderMessage } from "./lib/display";
 import { tick } from "./lib/sound";
 import { applyPaletteVars, PALETTE_KEYS } from "./lib/palettes";
+import { applyFont } from "./lib/fonts";
 import { buildExport, downloadImage } from "./lib/exportImage";
 import {
   Config,
@@ -21,7 +23,7 @@ import {
 const { config: INITIAL, isEmbed: IS_EMBED, hadUrlCfg: HAD_URL_CFG } = getInitial();
 const noop = () => {};
 
-type Pop = "none" | "palette" | "export";
+type Pop = "none" | "palette" | "font" | "export";
 
 export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
@@ -46,6 +48,10 @@ export default function App() {
   useLayoutEffect(() => {
     applyPaletteVars(config.palette);
   }, [config.palette]);
+
+  useLayoutEffect(() => {
+    applyFont(config.font);
+  }, [config.font]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -184,6 +190,7 @@ export default function App() {
             onMode={onMode}
             onToggleSound={toggleSound}
             onTogglePalette={() => togglePop("palette")}
+            onToggleFont={() => togglePop("font")}
             onFullscreen={fullscreen}
             onToggleExport={() => togglePop("export")}
           />
@@ -203,6 +210,10 @@ export default function App() {
               palette={config.palette}
               onSelect={(palette) => update({ palette })}
             />
+          )}
+
+          {openPop === "font" && (
+            <FontPopover font={config.font} onSelect={(font) => update({ font })} />
           )}
 
           {openPop === "export" && exportData && (
