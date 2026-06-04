@@ -409,6 +409,7 @@ body.light .icon-btn:hover {
   text-transform: uppercase;
   color: var(--ui-dim);
   white-space: nowrap;
+  padding-left: 6px;
 }
 .ctl-unit {
   font-size: 12px;
@@ -449,7 +450,7 @@ body.light .controls-card textarea {
 .msg-controls {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 10px;
 }
 .msg-row {
   display: flex;
@@ -467,7 +468,7 @@ body.light .controls-card textarea {
 .ctl-hint {
   font-size: 11px;
   color: var(--ui-dim);
-  padding-left: 2px;
+  padding-left: 6px;
 }
 .inline-seg {
   padding: 3px;
