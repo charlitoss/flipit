@@ -20,8 +20,6 @@ export const FONTS: FontDef[] = [
 
   { key: "orbitron", name: "Orbitron", category: "Retro / Modern", family: "Orbitron", stack: '"Orbitron", sans-serif', weight: 700, scale: 0.84 },
   { key: "bungee", name: "Bungee", category: "Retro / Modern", family: "Bungee", stack: '"Bungee", sans-serif', weight: 400, scale: 0.74 },
-  { key: "vt323", name: "VT323", category: "Retro / Modern", family: "VT323", stack: '"VT323", monospace', weight: 400, scale: 1.2 },
-  { key: "silkscreen", name: "Silkscreen", category: "Retro / Modern", family: "Silkscreen", stack: '"Silkscreen", sans-serif', weight: 700, scale: 0.7 },
 ];
 
 export const FONT_KEYS = FONTS.map((f) => f.key);

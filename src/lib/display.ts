@@ -7,9 +7,13 @@ function pad(n: number, w = 2): string {
   return String(n).padStart(w, "0");
 }
 
+// Columns rendered as transparent spacers (no flip card): the ":" separators
+// and any spaces (e.g. the gap before AM/PM).
 function buildSepCols(str: string): Set<number> {
   const set = new Set<number>();
-  for (let i = 0; i < str.length; i++) if (str[i] === ":") set.add(i);
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === ":" || str[i] === " ") set.add(i);
+  }
   return set;
 }
 
@@ -19,7 +23,9 @@ function clockString(format: "12" | "24", seconds: boolean): string {
   let h = d.getHours();
   let suffix = "";
   if (format === "12") {
-    suffix = h >= 12 ? "PM" : "AM"; // no leading space → no empty cell before AM/PM
+    // The leading space renders as a transparent spacer (see buildSepCols),
+    // giving a gap before AM/PM rather than a blank flip cell.
+    suffix = h >= 12 ? " PM" : " AM";
     h = h % 12;
     if (h === 0) h = 12;
   }
