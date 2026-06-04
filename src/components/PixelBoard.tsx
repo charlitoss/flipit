@@ -6,6 +6,9 @@ import type { Config } from "../lib/config";
 
 const REF = 200; // measuring font-size
 const MAX_FONT = 240;
+// One Geist Pixel "pixel" is ~0.0345 of the font-size (measured from the glyphs).
+// Used to size the background pixel grid so it tracks the font as it scales.
+const PIXEL_RATIO = 0.0345;
 
 export default function PixelBoard({ config, isEmbed }: { config: Config; isEmbed: boolean }) {
   const [state, setState] = useState(() => getDisplayState(config));
@@ -64,8 +67,10 @@ export default function PixelBoard({ config, isEmbed }: { config: Config; isEmbe
       const w = meas.offsetWidth;
       const h = meas.offsetHeight;
       if (!w || !h) return;
-      const font = Math.min((availW * REF) / w, (availH * REF) / h, MAX_FONT);
-      setFontSize(Math.max(8, font));
+      const font = Math.max(8, Math.min((availW * REF) / w, (availH * REF) / h, MAX_FONT));
+      setFontSize(font);
+      // Match the backdrop pixel grid to the font's pixel size as it scales.
+      stage.style.setProperty("--px-bg", (font * PIXEL_RATIO).toFixed(2) + "px");
     };
     fit();
     // re-fit once the web font has loaded (metrics change)
