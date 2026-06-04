@@ -82,24 +82,22 @@
       }
     </script>
 
-    <!-- Google Analytics (GA4) — skipped on localhost so dev traffic isn't tracked -->
+    <!-- Disable GA on local dev (official opt-out) so dev traffic isn't tracked. -->
     <script>
-      (function () {
-        var ID = "G-Q0SY22CC3C";
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {
-          dataLayer.push(arguments);
-        }
-        window.gtag = gtag;
-        gtag("js", new Date());
-        gtag("config", ID);
-        var host = location.hostname;
-        if (host === "localhost" || host === "127.0.0.1" || host === "") return;
-        var s = document.createElement("script");
-        s.async = true;
-        s.src = "https://www.googletagmanager.com/gtag/js?id=" + ID;
-        document.head.appendChild(s);
-      })();
+      if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        window["ga-disable-G-Q0SY22CC3C"] = true;
+      }
+    </script>
+    <!-- Google tag (gtag.js) — static so Search Console can verify ownership via Analytics. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q0SY22CC3C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      window.gtag = gtag;
+      gtag("js", new Date());
+      gtag("config", "G-Q0SY22CC3C");
     </script>
 
     <!-- Fonts -->
