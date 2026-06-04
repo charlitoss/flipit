@@ -3,6 +3,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import FlipBoard from "./components/FlipBoard";
 import LedBoard from "./components/LedBoard";
 import PixelBoard from "./components/PixelBoard";
+import CrtOverlay from "./components/CrtOverlay";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
@@ -206,7 +207,10 @@ export default function App() {
       {config.style === "led" ? (
         <LedBoard config={config} isEmbed={IS_EMBED} />
       ) : config.style === "pixel" ? (
-        <PixelBoard config={config} isEmbed={IS_EMBED} />
+        <>
+          <PixelBoard config={config} isEmbed={IS_EMBED} />
+          <CrtOverlay />
+        </>
       ) : (
         <FlipBoard
           config={config}

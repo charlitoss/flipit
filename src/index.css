@@ -888,8 +888,9 @@ body.pixel-mode.pv-lines #stage::before {
   mask-image: radial-gradient(125% 115% at 50% 44%, #000 30%, transparent 82%);
 }
 body.pixel-mode.pv-dots #stage::before {
-  background-image: radial-gradient(rgba(250, 250, 250, 0.09) 1.4px, transparent 1.7px);
-  background-size: 15px 15px;
+  /* square pixels (not round dots), tightly packed to echo the Geist Pixel grid */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect x='1.5' y='1.5' width='7' height='7' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E");
+  background-size: 10px 10px;
   animation: pv-dots-drift 24s linear infinite;
 }
 body.pixel-mode.pv-lines #stage::before {
@@ -909,7 +910,7 @@ body.pixel-mode.pv-lines #stage::before {
     opacity: 1;
   }
   100% {
-    background-position: 15px 15px;
+    background-position: 10px 10px;
     opacity: 0.88;
   }
 }
@@ -941,6 +942,80 @@ body.pixel-mode .pixel-board:not(.pixel-measure) {
 
 body.pixel-mode #caption-top {
   color: rgba(245, 245, 245, 0.42);
+}
+
+/* ---- CRT overlay (Pixel mode only) ---------------------------------------
+   Scanlines + RGB sub-pixel stripes + flicker + vignette, plus a chromatic
+   aberration filter on the board. Pure CSS + SVG. The overlay sits above the
+   display (z 10) but below the controls (z 18+), so the chrome stays crisp. */
+body.pixel-mode #stage {
+  filter: url(#crt-rgb-shift) contrast(1.05) brightness(1.02);
+}
+.crt-svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+.crt-overlay__scanlines {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.21) 0px,
+    rgba(0, 0, 0, 0.21) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+}
+.crt-overlay__scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255, 0, 80, 0.06) 0px,
+    rgba(0, 255, 120, 0.06) 1px,
+    rgba(0, 120, 255, 0.06) 2px
+  );
+  mix-blend-mode: screen;
+}
+.crt-overlay__flicker {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.05);
+  mix-blend-mode: overlay;
+  animation: crt-flicker 110ms steps(2) infinite;
+}
+.crt-overlay__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.36) 100%);
+}
+@keyframes crt-flicker {
+  0% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.92;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crt-overlay__flicker {
+    animation: none;
+  }
 }
 .pixel-board {
   display: flex;
