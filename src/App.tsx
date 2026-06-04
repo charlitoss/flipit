@@ -182,6 +182,14 @@ export default function App() {
 
       {!IS_EMBED && (
         <>
+          <header className="sr-only">
+            <h1>Flipit — a split-flap (Solari) display for your browser</h1>
+            <p>
+              A free flip clock, countdown timer, and animated message board with retro and
+              condensed fonts, color palettes, fullscreen, shareable links and an embeddable widget.
+            </p>
+          </header>
+
           <div id="caption">{caption}</div>
 
           <Toolbar

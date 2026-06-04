@@ -38,6 +38,19 @@ npm run preview  # preview the production build
 
 The build uses a relative base path (`base: "./"` in `vite.config.ts`), so the contents of `dist/` can be served from any sub-path. Build with `npm run build` and publish the `dist/` folder.
 
+## SEO & analytics
+
+The app is tuned for discoverability:
+
+- **Meta tags** in `index.html`: title, description, canonical, Open Graph + Twitter cards, `theme-color`, and `WebApplication` JSON-LD structured data.
+- **Social image** `public/og-image.png` (1200×630), plus `public/favicon.svg`, `public/icon-512.png` and `public/site.webmanifest`.
+- **Crawling**: `public/robots.txt` and `public/sitemap.xml`.
+- **Google Analytics (GA4)**: loaded inline in `index.html` (id `G-Q0SY22CC3C`). The network tag is skipped on `localhost`, so local development isn't tracked.
+
+> **Changing the domain:** the canonical URL `https://flipit-tool.vercel.app/` is referenced in `index.html` (canonical, OG, Twitter, JSON-LD), `public/robots.txt`, and `public/sitemap.xml`. Update it in those files if the domain changes.
+
+The social/icon images are generated from `tmp` HTML sources via headless Chrome — re-run only if you want to change the artwork.
+
 ## Keyboard shortcuts
 
 | Key | Action |
