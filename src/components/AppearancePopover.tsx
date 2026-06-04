@@ -10,11 +10,13 @@ interface Props {
   font: string;
   ledColor: string;
   pixelVariant: string;
+  crt: boolean;
   onSelectStyle: (s: DisplayStyle) => void;
   onSelectPalette: (key: string) => void;
   onSelectFont: (key: string) => void;
   onSelectLed: (key: string) => void;
   onSelectPixel: (key: string) => void;
+  onToggleCrt: (v: boolean) => void;
 }
 
 export default function AppearancePopover({
@@ -23,11 +25,13 @@ export default function AppearancePopover({
   font,
   ledColor,
   pixelVariant,
+  crt,
   onSelectStyle,
   onSelectPalette,
   onSelectFont,
   onSelectLed,
   onSelectPixel,
+  onToggleCrt,
 }: Props) {
   return (
     <div id="palettePop" className="popover">
@@ -80,6 +84,18 @@ export default function AppearancePopover({
                 <span className="po-name">{v.name}</span>
               </button>
             ))}
+          </div>
+
+          <div className="appearance-toggle">
+            <span>CRT effect</span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={crt}
+                onChange={(e) => onToggleCrt(e.target.checked)}
+              />
+              <span className="track" />
+            </label>
           </div>
         </>
       )}

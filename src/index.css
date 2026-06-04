@@ -889,8 +889,8 @@ body.pixel-mode.pv-lines #stage::before {
 }
 body.pixel-mode.pv-dots #stage::before {
   /* square pixels (not round dots), tightly packed to echo the Geist Pixel grid */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect x='1.5' y='1.5' width='7' height='7' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E");
-  background-size: 10px 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='5'%3E%3Crect x='0.75' y='0.75' width='3.5' height='3.5' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E");
+  background-size: 5px 5px;
   animation: pv-dots-drift 24s linear infinite;
 }
 body.pixel-mode.pv-lines #stage::before {
@@ -910,7 +910,7 @@ body.pixel-mode.pv-lines #stage::before {
     opacity: 1;
   }
   100% {
-    background-position: 10px 10px;
+    background-position: 5px 5px;
     opacity: 0.88;
   }
 }
@@ -948,7 +948,7 @@ body.pixel-mode #caption-top {
    Scanlines + RGB sub-pixel stripes + flicker + vignette, plus a chromatic
    aberration filter on the board. Pure CSS + SVG. The overlay sits above the
    display (z 10) but below the controls (z 18+), so the chrome stays crisp. */
-body.pixel-mode #stage {
+body.crt-on #stage {
   filter: url(#crt-rgb-shift) contrast(1.05) brightness(1.02);
 }
 .crt-svg-defs {
@@ -1086,6 +1086,16 @@ body.pixel-mode #stage {
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--ui-dim);
+}
+.appearance-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ui-border);
+  font-size: 13px;
+  color: var(--ui);
 }
 
 /* ---------- Export / share popover ---------- */

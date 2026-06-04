@@ -60,7 +60,8 @@ export default function App() {
     const isPixel = config.style === "pixel";
     document.body.classList.toggle("pv-dots", isPixel && config.pixelVariant !== "line");
     document.body.classList.toggle("pv-lines", isPixel && config.pixelVariant === "line");
-  }, [config.style, config.pixelVariant]);
+    document.body.classList.toggle("crt-on", isPixel && config.crt);
+  }, [config.style, config.pixelVariant, config.crt]);
 
   // Light chrome only for light palettes in the flip style; LED/Pixel are dark.
   useLayoutEffect(() => {
@@ -209,7 +210,7 @@ export default function App() {
       ) : config.style === "pixel" ? (
         <>
           <PixelBoard config={config} isEmbed={IS_EMBED} />
-          <CrtOverlay />
+          {config.crt && <CrtOverlay />}
         </>
       ) : (
         <FlipBoard
@@ -257,11 +258,13 @@ export default function App() {
               font={config.font}
               ledColor={config.ledColor}
               pixelVariant={config.pixelVariant}
+              crt={config.crt}
               onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
               onSelectLed={(ledColor) => update({ ledColor })}
               onSelectPixel={(pixelVariant) => update({ pixelVariant })}
+              onToggleCrt={(crt) => update({ crt })}
             />
           )}
 

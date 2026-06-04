@@ -17,6 +17,7 @@ export interface Config {
   style: DisplayStyle;
   ledColor: string;
   pixelVariant: string;
+  crt: boolean; // CRT overlay for the pixel style
   cdTarget: string | null; // datetime-local string, for the input
   cdDuration: number; // seconds, fallback when no active countdown
   cdEnd: number | null; // active end timestamp (ms)
@@ -34,6 +35,7 @@ export const DEFAULT_CONFIG: Config = {
   style: "flip",
   ledColor: "red",
   pixelVariant: "square",
+  crt: true,
   cdTarget: null,
   cdDuration: 600,
   cdEnd: null,
@@ -71,6 +73,7 @@ export function encodeCfg(c: Config): string {
     Math.max(0, STYLE_KEYS.indexOf(c.style)),
     Math.max(0, LED_KEYS.indexOf(c.ledColor)),
     Math.max(0, PIXEL_KEYS.indexOf(c.pixelVariant)),
+    c.crt ? 1 : 0,
   ];
   if (c.mode === "clock") {
     arr.push(c.clockFormat === "12" ? 1 : 0, c.clockSeconds ? 1 : 0);
@@ -92,15 +95,16 @@ export function decodeCfg(s: string): Partial<Config> | null {
     o.style = STYLE_KEYS[a[3]] || "flip";
     if (LED_KEYS[a[4]]) o.ledColor = LED_KEYS[a[4]];
     if (PIXEL_KEYS[a[5]]) o.pixelVariant = PIXEL_KEYS[a[5]];
+    o.crt = a[6] === undefined ? true : !!a[6];
     if (o.mode === "clock") {
-      o.clockFormat = a[6] ? "12" : "24";
-      o.clockSeconds = !!a[7];
+      o.clockFormat = a[7] ? "12" : "24";
+      o.clockSeconds = !!a[8];
     } else if (o.mode === "countdown") {
-      o.cdEnd = a[6] || null;
-      o.cdDuration = a[7] || 600;
-      o.cdDone = a[8] || "TIMES UP";
+      o.cdEnd = a[7] || null;
+      o.cdDuration = a[8] || 600;
+      o.cdDone = a[9] || "TIMES UP";
     } else {
-      o.message = a[6] || " ";
+      o.message = a[7] || " ";
     }
     return o;
   } catch {
