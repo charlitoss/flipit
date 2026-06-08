@@ -2,10 +2,11 @@ import { PALETTES, PALETTE_KEYS } from "./palettes";
 import { FONT_KEYS } from "./fonts";
 import { LED_KEYS } from "./led";
 import { PIXEL_KEYS, PIXEL_COLOR_KEYS } from "./pixel";
+import { MATRIX_COLOR_KEYS, MATRIX_SHAPE_KEYS } from "./dotmatrix";
 
 export type Mode = "clock" | "countdown" | "message";
-export type DisplayStyle = "flip" | "led" | "pixel";
-const STYLE_KEYS: DisplayStyle[] = ["flip", "led", "pixel"];
+export type DisplayStyle = "flip" | "led" | "pixel" | "matrix";
+const STYLE_KEYS: DisplayStyle[] = ["flip", "led", "pixel", "matrix"];
 
 export interface Config {
   mode: Mode;
@@ -18,6 +19,8 @@ export interface Config {
   ledColor: string;
   pixelVariant: string;
   pixelColor: string;
+  matrixColor: string;
+  matrixShape: string;
   crt: boolean; // CRT overlay for the pixel style
   cdTarget: string | null; // datetime-local string, for the input
   cdDuration: number; // seconds, fallback when no active countdown
@@ -37,6 +40,8 @@ export const DEFAULT_CONFIG: Config = {
   ledColor: "red",
   pixelVariant: "square",
   pixelColor: "white",
+  matrixColor: "white",
+  matrixShape: "rounded",
   crt: true,
   cdTarget: null,
   cdDuration: 600,
@@ -77,6 +82,8 @@ export function encodeCfg(c: Config): string {
     Math.max(0, PIXEL_KEYS.indexOf(c.pixelVariant)),
     c.crt ? 1 : 0,
     Math.max(0, PIXEL_COLOR_KEYS.indexOf(c.pixelColor)),
+    Math.max(0, MATRIX_COLOR_KEYS.indexOf(c.matrixColor)),
+    Math.max(0, MATRIX_SHAPE_KEYS.indexOf(c.matrixShape)),
   ];
   if (c.mode === "clock") {
     arr.push(c.clockFormat === "12" ? 1 : 0, c.clockSeconds ? 1 : 0);
@@ -100,15 +107,17 @@ export function decodeCfg(s: string): Partial<Config> | null {
     if (PIXEL_KEYS[a[5]]) o.pixelVariant = PIXEL_KEYS[a[5]];
     o.crt = a[6] === undefined ? true : !!a[6];
     if (PIXEL_COLOR_KEYS[a[7]]) o.pixelColor = PIXEL_COLOR_KEYS[a[7]];
+    if (MATRIX_COLOR_KEYS[a[8]]) o.matrixColor = MATRIX_COLOR_KEYS[a[8]];
+    if (MATRIX_SHAPE_KEYS[a[9]]) o.matrixShape = MATRIX_SHAPE_KEYS[a[9]];
     if (o.mode === "clock") {
-      o.clockFormat = a[8] ? "12" : "24";
-      o.clockSeconds = !!a[9];
+      o.clockFormat = a[10] ? "12" : "24";
+      o.clockSeconds = !!a[11];
     } else if (o.mode === "countdown") {
-      o.cdEnd = a[8] || null;
-      o.cdDuration = a[9] || 600;
-      o.cdDone = a[10] || "TIMES UP";
+      o.cdEnd = a[10] || null;
+      o.cdDuration = a[11] || 600;
+      o.cdDone = a[12] || "TIMES UP";
     } else {
-      o.message = a[8] || " ";
+      o.message = a[10] || " ";
     }
     return o;
   } catch {

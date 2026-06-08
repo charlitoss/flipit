@@ -4,6 +4,7 @@ import FlipBoard from "./components/FlipBoard";
 import LedBoard from "./components/LedBoard";
 import PixelBoard from "./components/PixelBoard";
 import CrtOverlay from "./components/CrtOverlay";
+import DotMatrixBoard from "./components/DotMatrixBoard";
 import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
@@ -15,6 +16,7 @@ import { applyPaletteVars, isLightPalette, PALETTES, PALETTE_KEYS } from "./lib/
 import { applyFont } from "./lib/fonts";
 import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
 import { applyPixel, pixelColorOn } from "./lib/pixel";
+import { applyMatrix, matrixColorOn } from "./lib/dotmatrix";
 import { buildExport, downloadImage } from "./lib/exportImage";
 import {
   Config,
@@ -57,6 +59,7 @@ export default function App() {
   useLayoutEffect(() => {
     document.body.classList.toggle("led-mode", config.style === "led");
     document.body.classList.toggle("pixel-mode", config.style === "pixel");
+    document.body.classList.toggle("matrix-mode", config.style === "matrix");
     // Background texture follows the pixel variant: dots for square/grid, lines for line.
     const isPixel = config.style === "pixel";
     document.body.classList.toggle("pv-dots", isPixel && config.pixelVariant !== "line");
@@ -78,6 +81,10 @@ export default function App() {
     applyPixel(config.pixelColor);
   }, [config.pixelColor]);
 
+  useLayoutEffect(() => {
+    applyMatrix(config.matrixColor);
+  }, [config.matrixColor]);
+
   // UI accent follows the LED/pixel color in those styles, otherwise the palette accent.
   // (Runs after applyPaletteVars so it has the final say on --accent.)
   useLayoutEffect(() => {
@@ -86,9 +93,11 @@ export default function App() {
         ? (LED_BY_KEY[config.ledColor] || LED_COLORS[0]).on
         : config.style === "pixel"
           ? pixelColorOn(config.pixelColor)
-          : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
+          : config.style === "matrix"
+            ? matrixColorOn(config.matrixColor)
+            : (PALETTES[config.palette] || PALETTES.onyx).vars.accent;
     document.body.style.setProperty("--accent", accent);
-  }, [config.style, config.ledColor, config.pixelColor, config.palette]);
+  }, [config.style, config.ledColor, config.pixelColor, config.matrixColor, config.palette]);
 
   useEffect(() => {
     setFlipSound(config.sound ? tick : null);
@@ -217,6 +226,8 @@ export default function App() {
           <PixelBoard config={config} isEmbed={IS_EMBED} />
           {config.crt && <CrtOverlay />}
         </>
+      ) : config.style === "matrix" ? (
+        <DotMatrixBoard config={config} isEmbed={IS_EMBED} />
       ) : (
         <FlipBoard
           config={config}
@@ -264,6 +275,8 @@ export default function App() {
               ledColor={config.ledColor}
               pixelVariant={config.pixelVariant}
               pixelColor={config.pixelColor}
+              matrixColor={config.matrixColor}
+              matrixShape={config.matrixShape}
               crt={config.crt}
               onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
@@ -271,6 +284,8 @@ export default function App() {
               onSelectLed={(ledColor) => update({ ledColor })}
               onSelectPixel={(pixelVariant) => update({ pixelVariant })}
               onSelectPixelColor={(pixelColor) => update({ pixelColor })}
+              onSelectMatrixColor={(matrixColor) => update({ matrixColor })}
+              onSelectMatrixShape={(matrixShape) => update({ matrixShape })}
               onToggleCrt={(crt) => update({ crt })}
             />
           )}
