@@ -100,7 +100,11 @@ export default function PixelBoard({ config, isEmbed }: { config: Config; isEmbe
 
   return (
     <div id="stage" ref={stageRef}>
-      {!isEmbed && state.caption && <div id="caption-top">{state.caption}</div>}
+      {!isEmbed && state.caption && (
+        <div id="caption-top" className="caption-pixel" style={{ fontFamily: stack }}>
+          {state.caption}
+        </div>
+      )}
       {/* hidden measuring copy at the reference size */}
       <div
         ref={measureRef}
