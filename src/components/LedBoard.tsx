@@ -74,7 +74,15 @@ export default function LedBoard({ config, isEmbed }: { config: Config; isEmbed:
 
   return (
     <div id="stage" ref={stageRef}>
-      {!isEmbed && state.caption && <div id="caption-top">{state.caption}</div>}
+      {!isEmbed && state.caption && (
+        <div id="caption-top" className="caption-seg" aria-label={state.caption}>
+          {[...state.caption.toUpperCase()].map((ch, i) => (
+            <span className="cap-cell" key={i}>
+              <LedChar ch={ch} />
+            </span>
+          ))}
+        </div>
+      )}
       <div className="led-board" style={{ fontSize }}>
         {state.lines.map((line, i) => (
           <div className="led-row" key={i}>

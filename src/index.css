@@ -831,6 +831,8 @@ body.led-mode {
 body.led-mode #caption-top {
   color: var(--led-on);
   opacity: 0.45;
+  /* segment glyphs need more size than plain text to stay readable */
+  font-size: clamp(17px, 2.6vw, 28px);
 }
 .led-board {
   display: flex;
@@ -858,6 +860,37 @@ body.led-mode #caption-top {
 }
 .led-seg.on {
   fill: var(--led-on);
+}
+
+/* Caption rendered in the same 14-segment glyphs as the display.
+   Lit segments only (ghosts hidden) so it stays legible at caption size. */
+#caption-top.caption-seg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.06em;
+  letter-spacing: normal;
+  line-height: 1;
+  filter: drop-shadow(0 0 0.4px var(--led-glow));
+}
+body.led-mode #caption-top.caption-seg {
+  opacity: 0.62;
+}
+.caption-seg .cap-cell {
+  width: 0.62em;
+  height: 1.18em;
+  flex: 0 0 auto;
+}
+.caption-seg .led-char {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.caption-seg .led-seg {
+  fill: var(--led-on);
+}
+.caption-seg .led-seg:not(.on) {
+  display: none;
 }
 
 /* ---------- Geist Pixel (Vercel) display ---------- */
@@ -950,7 +983,12 @@ body.pixel-mode .pixel-board:not(.pixel-measure) {
 }
 
 body.pixel-mode #caption-top {
-  color: rgba(245, 245, 245, 0.42);
+  /* match the display font (family set inline to the selected variant) + color */
+  color: var(--pixel-on, #fafafa);
+  opacity: 0.5;
+  letter-spacing: 0.12em;
+  /* the pixel font needs more size than plain text to stay readable */
+  font-size: clamp(16px, 2.4vw, 26px);
 }
 
 /* ---- CRT overlay (Pixel mode only) ---------------------------------------
