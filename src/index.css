@@ -893,6 +893,39 @@ body.led-mode #caption-top.caption-seg {
   display: none;
 }
 
+/* ---------- Dot-matrix panel ---------- */
+body.matrix-mode {
+  background: radial-gradient(120% 95% at 50% -10%, #0e0e10, #000 76%);
+}
+.dm-board {
+  display: grid;
+  justify-content: center;
+  align-content: center;
+}
+.dm-cell {
+  background: var(--dm-off, #222224);
+}
+.dm-cell.on {
+  background: var(--dm-on, #f4f4f4);
+  box-shadow: 0 0 1.5px var(--dm-glow, rgba(255, 255, 255, 0.4));
+}
+.dm-shape-sample {
+  width: 26px;
+  height: 26px;
+  background: var(--dm-on, #f4f4f4);
+  box-shadow: 0 0 4px var(--dm-glow, rgba(255, 255, 255, 0.4));
+}
+/* Caption rendered in the same dots, lit only (no panel) so it stays clean. */
+#caption-top.caption-dm {
+  opacity: 0.6;
+}
+.caption-dm .dm-cell:not(.on) {
+  background: transparent;
+}
+.caption-dm .dm-cell.on {
+  box-shadow: none;
+}
+
 /* ---------- Geist Pixel (Vercel) display ---------- */
 @font-face {
   font-family: "Geist Pixel Square";

@@ -2,6 +2,7 @@ import { PALETTES, PALETTE_KEYS } from "../lib/palettes";
 import { FONTS, FONT_CATEGORIES } from "../lib/fonts";
 import { LED_COLORS } from "../lib/led";
 import { PIXEL_VARIANTS, PIXEL_COLORS } from "../lib/pixel";
+import { MATRIX_COLORS, MATRIX_SHAPES } from "../lib/dotmatrix";
 import type { DisplayStyle } from "../lib/config";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
   ledColor: string;
   pixelVariant: string;
   pixelColor: string;
+  matrixColor: string;
+  matrixShape: string;
   crt: boolean;
   onSelectStyle: (s: DisplayStyle) => void;
   onSelectPalette: (key: string) => void;
@@ -18,6 +21,8 @@ interface Props {
   onSelectLed: (key: string) => void;
   onSelectPixel: (key: string) => void;
   onSelectPixelColor: (key: string) => void;
+  onSelectMatrixColor: (key: string) => void;
+  onSelectMatrixShape: (key: string) => void;
   onToggleCrt: (v: boolean) => void;
 }
 
@@ -28,6 +33,8 @@ export default function AppearancePopover({
   ledColor,
   pixelVariant,
   pixelColor,
+  matrixColor,
+  matrixShape,
   crt,
   onSelectStyle,
   onSelectPalette,
@@ -35,6 +42,8 @@ export default function AppearancePopover({
   onSelectLed,
   onSelectPixel,
   onSelectPixelColor,
+  onSelectMatrixColor,
+  onSelectMatrixShape,
   onToggleCrt,
 }: Props) {
   return (
@@ -49,6 +58,9 @@ export default function AppearancePopover({
         </button>
         <button className={style === "pixel" ? "active" : ""} onClick={() => onSelectStyle("pixel")}>
           Pixel
+        </button>
+        <button className={style === "matrix" ? "active" : ""} onClick={() => onSelectStyle("matrix")}>
+          Matrix
         </button>
       </div>
 
@@ -116,6 +128,40 @@ export default function AppearancePopover({
               />
               <span className="track" />
             </label>
+          </div>
+        </>
+      )}
+
+      {style === "matrix" && (
+        <>
+          <h3 className="appearance-section">Color</h3>
+          <div className="led-swatches pixel-swatches">
+            {MATRIX_COLORS.map((c) => (
+              <button
+                key={c.key}
+                className={"led-swatch" + (matrixColor === c.key ? " active" : "")}
+                title={c.name}
+                aria-label={c.name}
+                style={{ ["--sw-on" as string]: c.on } as React.CSSProperties}
+                onClick={() => onSelectMatrixColor(c.key)}
+              >
+                <span className="led-dot" />
+              </button>
+            ))}
+          </div>
+
+          <h3 className="appearance-section">Cell shape</h3>
+          <div className="pixel-variants">
+            {MATRIX_SHAPES.map((s) => (
+              <button
+                key={s.key}
+                className={"pixel-opt" + (matrixShape === s.key ? " active" : "")}
+                onClick={() => onSelectMatrixShape(s.key)}
+              >
+                <span className="dm-shape-sample" style={{ borderRadius: `${s.radius * 100}%` }} />
+                <span className="po-name">{s.name}</span>
+              </button>
+            ))}
           </div>
         </>
       )}

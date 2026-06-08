@@ -4,6 +4,7 @@ import { FONT_BY_KEY } from "./fonts";
 import { LED_BY_KEY, LED_COLORS } from "./led";
 import { SEG_POLYS, litSegments, CHAR_VB } from "./segments";
 import { pixelFamily, pixelColorOn } from "./pixel";
+import { buildMatrix, matrixColorOn, matrixOffColor, matrixRadius } from "./dotmatrix";
 import { getDisplayState } from "./display";
 import { Config, shareURL } from "./config";
 
@@ -309,6 +310,47 @@ function drawPixelToCanvas(config: Config, scale: number): HTMLCanvasElement {
   return canvas;
 }
 
+function drawMatrixToCanvas(config: Config, scale: number): HTMLCanvasElement {
+  const { lines } = getDisplayState(config);
+  const grid = buildMatrix(lines);
+  const rows = grid.length;
+  const cols = grid[0]?.length || 1;
+  const CELL = 30;
+  const GAP = CELL * 0.2;
+  const pitch = CELL + GAP;
+  const margin = CELL;
+  const r = CELL * matrixRadius(config.matrixShape);
+  const W = cols * pitch - GAP + margin * 2;
+  const H = rows * pitch - GAP + margin * 2;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(W * scale);
+  canvas.height = Math.round(H * scale);
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(scale, scale);
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#0e0e10");
+  bg.addColorStop(1, "#000000");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const onColor = matrixColorOn(config.matrixColor);
+  const offColor = matrixOffColor(config.matrixColor);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      ctx.fillStyle = grid[y][x] ? onColor : offColor;
+      const px = margin + x * pitch;
+      const py = margin + y * pitch;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(px, py, CELL, CELL, r);
+      else ctx.rect(px, py, CELL, CELL);
+      ctx.fill();
+    }
+  }
+  return canvas;
+}
+
 export async function downloadImage(config: Config, board: Board | null): Promise<void> {
   if (document.fonts?.ready) {
     try {
@@ -322,9 +364,11 @@ export async function downloadImage(config: Config, board: Board | null): Promis
       ? drawLedToCanvas(config, 2)
       : config.style === "pixel"
         ? drawPixelToCanvas(config, 2)
-        : board
-          ? drawBoardToCanvas(board, config, 2)
-          : null;
+        : config.style === "matrix"
+          ? drawMatrixToCanvas(config, 2)
+          : board
+            ? drawBoardToCanvas(board, config, 2)
+            : null;
   if (!canvas) return;
   canvas.toBlob((blob) => {
     if (!blob) return;
