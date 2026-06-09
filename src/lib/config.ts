@@ -39,6 +39,8 @@ export interface Config {
   breakLength: number; // minutes of break time once a break is taken
   breakPrompt: boolean; // a break prompt card is currently showing
   breakEnd: number | null; // ms timestamp the active break ends (null = not on a break)
+  reminderPaused: boolean; // next-break countdown is paused (quick pause from the bell)
+  reminderPausedLeft: number; // ms left in the interval, frozen while paused
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -71,6 +73,8 @@ export const DEFAULT_CONFIG: Config = {
   breakLength: 5,
   breakPrompt: false,
   breakEnd: null,
+  reminderPaused: false,
+  reminderPausedLeft: 0,
 };
 
 const STORAGE_KEY = "flipit";

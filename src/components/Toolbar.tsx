@@ -6,6 +6,8 @@ import {
   FullscreenIcon,
   ShareIcon,
   BellIcon,
+  PauseIcon,
+  PlayIcon,
 } from "./Icons";
 import BellCountdown from "./BellCountdown";
 
@@ -14,9 +16,11 @@ interface Props {
   mode: Mode;
   sound: boolean;
   reminderOn: boolean;
+  pillBeat: boolean;
   onMode: (m: Mode) => void;
   onToggleSound: () => void;
   onToggleReminders: () => void;
+  onTogglePause: () => void;
   onToggleAppearance: () => void;
   onFullscreen: () => void;
   onToggleExport: () => void;
@@ -33,13 +37,19 @@ export default function Toolbar({
   mode,
   sound,
   reminderOn,
+  pillBeat,
   onMode,
   onToggleSound,
   onToggleReminders,
+  onTogglePause,
   onToggleAppearance,
   onFullscreen,
   onToggleExport,
 }: Props) {
+  // A quick pause control is only useful while the next-break countdown is
+  // running (not during a pending prompt or an active break).
+  const canPause = reminderOn && config.breakEnd === null && !config.breakPrompt;
+  const pauseLabel = config.reminderPaused ? "Resume reminders" : "Pause reminders";
   return (
     <div id="topbar">
       <div className="seg" id="modes">
@@ -61,22 +71,39 @@ export default function Toolbar({
         >
           {sound ? <SoundOnIcon /> : <SoundOffIcon />}
         </button>
-        <button
+        <div
           className={
             "icon-btn bell-btn" +
             (reminderOn ? " on bell-on" : "") +
-            (config.breakPrompt ? " bell-alert" : "")
+            (config.breakPrompt ? " bell-alert" : "") +
+            (pillBeat ? " bell-collapse" : "")
           }
-          title="Break reminders"
-          aria-label="Break reminders"
           data-pop-trigger
-          onClick={onToggleReminders}
         >
-          <BellIcon />
-          <span className="bell-cd-wrap">
-            <BellCountdown config={config} />
-          </span>
-        </button>
+          <button
+            type="button"
+            className="bell-face"
+            title="Break reminders"
+            aria-label="Break reminders"
+            onClick={onToggleReminders}
+          >
+            <BellIcon />
+            <span className="bell-cd-wrap">
+              <BellCountdown config={config} />
+            </span>
+          </button>
+          {canPause && (
+            <button
+              type="button"
+              className="bell-pause"
+              title={pauseLabel}
+              aria-label={pauseLabel}
+              onClick={onTogglePause}
+            >
+              {config.reminderPaused ? <PlayIcon /> : <PauseIcon />}
+            </button>
+          )}
+        </div>
         <button
           className="icon-btn"
           title="Color &amp; font"
