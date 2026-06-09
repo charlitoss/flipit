@@ -9,9 +9,13 @@ import Toolbar from "./components/Toolbar";
 import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
 import ExportPopover from "./components/ExportPopover";
+import RemindersPopover from "./components/RemindersPopover";
+import Toast from "./components/Toast";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
-import { tick, unlockAudio } from "./lib/sound";
+import { tick, chime, unlockAudio } from "./lib/sound";
+import { showNotification } from "./lib/notify";
+import { withinReminderWindow } from "./lib/reminders";
 import { applyPaletteVars, isLightPalette, PALETTES, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
 import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
@@ -28,7 +32,7 @@ import {
 
 const { config: INITIAL, isEmbed: IS_EMBED, hadUrlCfg: HAD_URL_CFG } = getInitial();
 
-type Pop = "none" | "palette" | "export";
+type Pop = "none" | "palette" | "export" | "reminders";
 
 export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
@@ -41,6 +45,23 @@ export default function App() {
 
   const update = useCallback((patch: Partial<Config>) => {
     setConfig((c) => ({ ...c, ...patch }));
+  }, []);
+
+  // Latest config for interval callbacks (avoids stale closures / re-subscribing).
+  const configRef = useRef(config);
+  configRef.current = config;
+
+  // ----- Alerts (reminders) -----
+  const [toast, setToast] = useState<{ id: number; title: string; body: string } | null>(null);
+  const toastTimer = useRef<number>();
+  const fireAlert = useCallback((title: string, body: string, soundFn: () => void) => {
+    if (!IS_EMBED) {
+      soundFn();
+      showNotification(title, body);
+      setToast({ id: Date.now(), title, body });
+      window.clearTimeout(toastTimer.current);
+      toastTimer.current = window.setTimeout(() => setToast(null), 6000);
+    }
   }, []);
 
   // ----- Persist + apply palette/sound/embed -----
@@ -140,6 +161,25 @@ export default function App() {
     },
     []
   );
+
+  // ----- Break / stand-up reminders -----
+  useEffect(() => {
+    if (IS_EMBED || !config.reminderOn) return;
+    const everyMs = Math.max(1, config.reminderEvery) * 60_000;
+    const id = window.setInterval(() => {
+      const c = configRef.current;
+      const last = c.reminderLast || Date.now();
+      if (Date.now() - last < everyMs) return;
+      // Respect the active-hours window; just slide the anchor while off-hours.
+      if (!withinReminderWindow(c)) {
+        update({ reminderLast: Date.now() });
+        return;
+      }
+      update({ reminderLast: Date.now() });
+      fireAlert("Time for a break", c.reminderLabel || "Stand up and move", chime);
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [config.reminderOn, config.reminderEvery, config.reminderLabel, config.reminderWindow, config.reminderFrom, config.reminderTo, fireAlert, update]);
 
   // ----- Keyboard shortcuts (skip in embed) -----
   useEffect(() => {
@@ -249,10 +289,13 @@ export default function App() {
           </header>
 
           <Toolbar
+            config={config}
             mode={config.mode}
             sound={config.sound}
+            reminderOn={config.reminderOn}
             onMode={onMode}
             onToggleSound={toggleSound}
+            onToggleReminders={() => togglePop("reminders")}
             onToggleAppearance={() => togglePop("palette")}
             onFullscreen={fullscreen}
             onToggleExport={() => togglePop("export")}
@@ -297,6 +340,28 @@ export default function App() {
               onDownload={() => downloadImage(config, boardRef.current)}
             />
           )}
+
+          {openPop === "reminders" && (
+            <RemindersPopover
+              on={config.reminderOn}
+              every={config.reminderEvery}
+              label={config.reminderLabel}
+              window={config.reminderWindow}
+              from={config.reminderFrom}
+              to={config.reminderTo}
+              onToggle={(reminderOn) => {
+                if (reminderOn) unlockAudio();
+                update(reminderOn ? { reminderOn, reminderLast: Date.now() } : { reminderOn });
+              }}
+              onEvery={(reminderEvery) => update({ reminderEvery })}
+              onLabel={(reminderLabel) => update({ reminderLabel })}
+              onWindow={(reminderWindow) => update({ reminderWindow })}
+              onFrom={(reminderFrom) => update({ reminderFrom })}
+              onTo={(reminderTo) => update({ reminderTo })}
+            />
+          )}
+
+          {toast && <Toast title={toast.title} body={toast.body} />}
         </>
       )}
     </>

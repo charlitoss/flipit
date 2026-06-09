@@ -27,6 +27,14 @@ export interface Config {
   cdEnd: number | null; // active end timestamp (ms)
   cdDone: string;
   message: string;
+  // Break / stand-up reminders (global; localStorage-only, never in the share URL)
+  reminderOn: boolean;
+  reminderEvery: number; // minutes between nudges
+  reminderLabel: string;
+  reminderLast: number; // ms timestamp of the last nudge (anchor)
+  reminderWindow: boolean; // restrict reminders to an active-hours window
+  reminderFrom: string; // "HH:MM" window start
+  reminderTo: string; // "HH:MM" window end
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -48,6 +56,13 @@ export const DEFAULT_CONFIG: Config = {
   cdEnd: null,
   cdDone: "TIMES UP",
   message: "HELLO WORLD",
+  reminderOn: false,
+  reminderEvery: 30,
+  reminderLabel: "Stand up and move",
+  reminderLast: 0,
+  reminderWindow: false,
+  reminderFrom: "09:00",
+  reminderTo: "17:00",
 };
 
 const STORAGE_KEY = "flipit";

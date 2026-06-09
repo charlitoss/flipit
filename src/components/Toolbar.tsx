@@ -1,11 +1,22 @@
-import type { Mode } from "../lib/config";
-import { SoundOnIcon, SoundOffIcon, PaletteIcon, FullscreenIcon, ShareIcon } from "./Icons";
+import type { Config, Mode } from "../lib/config";
+import {
+  SoundOnIcon,
+  SoundOffIcon,
+  PaletteIcon,
+  FullscreenIcon,
+  ShareIcon,
+  BellIcon,
+} from "./Icons";
+import BellCountdown from "./BellCountdown";
 
 interface Props {
+  config: Config;
   mode: Mode;
   sound: boolean;
+  reminderOn: boolean;
   onMode: (m: Mode) => void;
   onToggleSound: () => void;
+  onToggleReminders: () => void;
   onToggleAppearance: () => void;
   onFullscreen: () => void;
   onToggleExport: () => void;
@@ -18,10 +29,13 @@ const MODES: { key: Mode; label: string }[] = [
 ];
 
 export default function Toolbar({
+  config,
   mode,
   sound,
+  reminderOn,
   onMode,
   onToggleSound,
+  onToggleReminders,
   onToggleAppearance,
   onFullscreen,
   onToggleExport,
@@ -46,6 +60,18 @@ export default function Toolbar({
           onClick={onToggleSound}
         >
           {sound ? <SoundOnIcon /> : <SoundOffIcon />}
+        </button>
+        <button
+          className={"icon-btn bell-btn" + (reminderOn ? " on bell-on" : "")}
+          title="Break reminders"
+          aria-label="Break reminders"
+          data-pop-trigger
+          onClick={onToggleReminders}
+        >
+          <BellIcon />
+          <span className="bell-cd-wrap">
+            <BellCountdown config={config} />
+          </span>
         </button>
         <button
           className="icon-btn"

@@ -64,3 +64,26 @@ export function alarm(): void {
   beep(0.44, 880, 0.16);
   beep(0.66, 1318.51, 0.42); // E6, longer final
 }
+
+// A gentle two-tone chime for break reminders.
+export function chime(): void {
+  const ctx = getCtx();
+  if (ctx.state === "suspended") ctx.resume?.();
+  const t0 = ctx.currentTime + 0.02;
+  const note = (offset: number, freq: number, dur: number) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const t = t0 + offset;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.16, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + dur + 0.03);
+  };
+  note(0.0, 659.25, 0.5); // E5
+  note(0.18, 987.77, 0.6); // B5
+}
