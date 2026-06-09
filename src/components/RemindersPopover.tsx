@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { notifyPermission, notifySupported, requestNotify } from "../lib/notify";
+import { fmtMs } from "../lib/reminders";
 
 interface Props {
   on: boolean;
@@ -9,6 +10,9 @@ interface Props {
   from: string;
   to: string;
   notify: boolean;
+  breakLength: number;
+  breakPrompt: boolean;
+  breakEnd: number | null;
   onToggle: (on: boolean) => void;
   onEvery: (minutes: number) => void;
   onLabel: (label: string) => void;
@@ -16,9 +20,14 @@ interface Props {
   onFrom: (hhmm: string) => void;
   onTo: (hhmm: string) => void;
   onNotify: (on: boolean) => void;
+  onBreakLength: (minutes: number) => void;
+  onTake: () => void;
+  onSkip: () => void;
+  onEnd: () => void;
 }
 
 const PRESETS = [30, 45, 60];
+const BREAK_PRESETS = [5, 10, 15];
 
 export default function RemindersPopover({
   on,
@@ -28,6 +37,9 @@ export default function RemindersPopover({
   from,
   to,
   notify,
+  breakLength,
+  breakPrompt,
+  breakEnd,
   onToggle,
   onEvery,
   onLabel,
@@ -35,9 +47,60 @@ export default function RemindersPopover({
   onFrom,
   onTo,
   onNotify,
+  onBreakLength,
+  onTake,
+  onSkip,
+  onEnd,
 }: Props) {
   const [perm, setPerm] = useState<NotificationPermission>(notifyPermission());
 
+  // Tick once a second while a break is running so the countdown stays live.
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (breakEnd === null) return;
+    const id = window.setInterval(() => tick((n) => n + 1), 250);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [breakEnd]);
+
+  // ----- Active break: a focused panel that replaces the settings -----
+  if (breakEnd !== null) {
+    return (
+      <div id="remindersPop" className="popover rem-break" role="status" aria-live="polite">
+        <h3>On a break</h3>
+        <div className="break-clock" aria-label="Break time remaining">
+          {fmtMs(Math.max(0, breakEnd - Date.now()))}
+        </div>
+        <div className="break-sub">Your next break is paused until this finishes.</div>
+        <button className="btn-ghost" onClick={onEnd}>
+          End break
+        </button>
+      </div>
+    );
+  }
+
+  // ----- Pending prompt: take a break or skip -----
+  if (breakPrompt) {
+    return (
+      <div id="remindersPop" className="popover rem-break" role="alertdialog" aria-label="Time for a break">
+        <h3>Time for a break</h3>
+        <div className="break-title">{label || "Stand up and move"}</div>
+        <div className="break-sub">
+          Take {breakLength} min — or skip and I’ll remind you next interval.
+        </div>
+        <div className="break-actions">
+          <button className="btn-primary compact" onClick={onTake}>
+            Take a break
+          </button>
+          <button className="btn-ghost" onClick={onSkip}>
+            Skip
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ----- Idle: the settings -----
   return (
     <div id="remindersPop" className="popover">
       <h3>Break reminders</h3>
@@ -55,6 +118,21 @@ export default function RemindersPopover({
         <div className="seg small">
           {PRESETS.map((m) => (
             <button key={m} className={every === m ? "active" : ""} onClick={() => onEvery(m)}>
+              {m}m
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="rem-field">
+        <span className="ctl-label">Break for</span>
+        <div className="seg small">
+          {BREAK_PRESETS.map((m) => (
+            <button
+              key={m}
+              className={breakLength === m ? "active" : ""}
+              onClick={() => onBreakLength(m)}
+            >
               {m}m
             </button>
           ))}

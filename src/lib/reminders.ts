@@ -21,3 +21,14 @@ export function nextBreakMs(c: Config, now: number = Date.now()): number {
   const last = c.reminderLast || now;
   return Math.max(0, last + every - now);
 }
+
+// Milliseconds left in the active break (>= 0); 0 when not on a break.
+export function breakLeftMs(c: Config, now: number = Date.now()): number {
+  return c.breakEnd === null ? 0 : Math.max(0, c.breakEnd - now);
+}
+
+// "M:SS" formatting for a count of milliseconds.
+export function fmtMs(ms: number): string {
+  const s = Math.round(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}

@@ -62,7 +62,11 @@ export default function Toolbar({
           {sound ? <SoundOnIcon /> : <SoundOffIcon />}
         </button>
         <button
-          className={"icon-btn bell-btn" + (reminderOn ? " on bell-on" : "")}
+          className={
+            "icon-btn bell-btn" +
+            (reminderOn ? " on bell-on" : "") +
+            (config.breakPrompt ? " bell-alert" : "")
+          }
           title="Break reminders"
           aria-label="Break reminders"
           data-pop-trigger

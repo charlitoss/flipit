@@ -36,6 +36,9 @@ export interface Config {
   reminderFrom: string; // "HH:MM" window start
   reminderTo: string; // "HH:MM" window end
   reminderNotify: boolean; // app-level toggle for desktop notifications (when permission granted)
+  breakLength: number; // minutes of break time once a break is taken
+  breakPrompt: boolean; // a break prompt card is currently showing
+  breakEnd: number | null; // ms timestamp the active break ends (null = not on a break)
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -65,6 +68,9 @@ export const DEFAULT_CONFIG: Config = {
   reminderFrom: "09:00",
   reminderTo: "17:00",
   reminderNotify: true,
+  breakLength: 5,
+  breakPrompt: false,
+  breakEnd: null,
 };
 
 const STORAGE_KEY = "flipit";

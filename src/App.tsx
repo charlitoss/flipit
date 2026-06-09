@@ -52,17 +52,28 @@ export default function App() {
   configRef.current = config;
 
   // ----- Alerts (reminders) -----
+  // playAlert: sound + (optional) desktop notification, no on-screen banner.
+  // Used to open the persistent break card.
+  const playAlert = useCallback((title: string, body: string, soundFn: () => void) => {
+    if (IS_EMBED) return;
+    soundFn();
+    if (configRef.current.reminderNotify) showNotification(title, body);
+  }, []);
+
+  // fireAlert: playAlert + a transient on-screen toast (auto-clears). Used for
+  // the brief "break's over" confirmation.
   const [toast, setToast] = useState<{ id: number; title: string; body: string } | null>(null);
   const toastTimer = useRef<number>();
-  const fireAlert = useCallback((title: string, body: string, soundFn: () => void) => {
-    if (!IS_EMBED) {
-      soundFn();
-      if (configRef.current.reminderNotify) showNotification(title, body);
+  const fireAlert = useCallback(
+    (title: string, body: string, soundFn: () => void) => {
+      if (IS_EMBED) return;
+      playAlert(title, body, soundFn);
       setToast({ id: Date.now(), title, body });
       window.clearTimeout(toastTimer.current);
       toastTimer.current = window.setTimeout(() => setToast(null), 6000);
-    }
-  }, []);
+    },
+    [playAlert]
+  );
 
   // ----- Persist + apply palette/sound/embed -----
   useEffect(() => {
@@ -165,11 +176,16 @@ export default function App() {
   );
 
   // ----- Break / stand-up reminders -----
+  // When the interval elapses, open the persistent break prompt (rather than a
+  // fleeting toast). The anchor is NOT reset here — the next interval begins
+  // only once the break is skipped or finished (see the break actions below).
   useEffect(() => {
     if (IS_EMBED || !config.reminderOn) return;
     const everyMs = Math.max(1, config.reminderEvery) * 60_000;
     const id = window.setInterval(() => {
       const c = configRef.current;
+      // Don't nag while a prompt is up or a break is in progress.
+      if (c.breakPrompt || c.breakEnd !== null) return;
       const last = c.reminderLast || Date.now();
       if (Date.now() - last < everyMs) return;
       // Respect the active-hours window; just slide the anchor while off-hours.
@@ -177,11 +193,44 @@ export default function App() {
         update({ reminderLast: Date.now() });
         return;
       }
-      update({ reminderLast: Date.now() });
-      fireAlert("Time for a break", c.reminderLabel || "Stand up and move", chime);
+      playAlert("Time for a break", c.reminderLabel || "Stand up and move", chime);
+      update({ breakPrompt: true });
     }, 5000);
     return () => window.clearInterval(id);
-  }, [config.reminderOn, config.reminderEvery, config.reminderLabel, config.reminderWindow, config.reminderFrom, config.reminderTo, fireAlert, update]);
+  }, [config.reminderOn, config.reminderEvery, config.reminderLabel, config.reminderWindow, config.reminderFrom, config.reminderTo, playAlert, update]);
+
+  // Auto-end an active break: when the break clock runs out, restart the
+  // next-break interval from now and chime a short "back to it".
+  useEffect(() => {
+    if (IS_EMBED || config.breakEnd === null) return;
+    const id = window.setInterval(() => {
+      const c = configRef.current;
+      if (c.breakEnd !== null && Date.now() >= c.breakEnd) {
+        update({ breakEnd: null, reminderLast: Date.now() });
+        if (openPopRef.current === "reminders") setOpenPop("none");
+        fireAlert("Break’s over", "Nice — back to it.", chime);
+      }
+    }, 500);
+    return () => window.clearInterval(id);
+  }, [config.breakEnd, fireAlert, update]);
+
+  // Break-card actions.
+  const takeBreak = useCallback(() => {
+    unlockAudio(); // user gesture — lets the end-of-break chime play later
+    const len = Math.max(1, configRef.current.breakLength);
+    update({ breakPrompt: false, breakEnd: Date.now() + len * 60_000 });
+  }, [update]);
+  const skipBreak = useCallback(() => {
+    // Skipped: the next interval starts right now. Close the dropdown so we
+    // don't snap from the prompt straight to the settings view.
+    update({ breakPrompt: false, reminderLast: Date.now() });
+    setOpenPop("none");
+  }, [update]);
+  const endBreak = useCallback(() => {
+    // Ended early: count the next interval from now.
+    update({ breakEnd: null, reminderLast: Date.now() });
+    setOpenPop("none");
+  }, [update]);
 
   // ----- Keyboard shortcuts (skip in embed) -----
   useEffect(() => {
@@ -352,11 +401,22 @@ export default function App() {
               from={config.reminderFrom}
               to={config.reminderTo}
               notify={config.reminderNotify}
+              breakLength={config.breakLength}
+              breakPrompt={config.breakPrompt}
+              breakEnd={config.breakEnd}
+              onTake={takeBreak}
+              onSkip={skipBreak}
+              onEnd={endBreak}
               onToggle={(reminderOn) => {
                 if (reminderOn) unlockAudio();
-                update(reminderOn ? { reminderOn, reminderLast: Date.now() } : { reminderOn });
+                update(
+                  reminderOn
+                    ? { reminderOn, reminderLast: Date.now() }
+                    : { reminderOn, breakPrompt: false, breakEnd: null }
+                );
               }}
               onEvery={(reminderEvery) => update({ reminderEvery })}
+              onBreakLength={(breakLength) => update({ breakLength })}
               onLabel={(reminderLabel) => update({ reminderLabel })}
               onWindow={(reminderWindow) => update({ reminderWindow })}
               onFrom={(reminderFrom) => update({ reminderFrom })}
