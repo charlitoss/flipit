@@ -1265,10 +1265,6 @@ body.light .rem-input {
 .rem-note .btn-ghost.compact {
   width: 100%;
 }
-.rem-ok {
-  color: var(--accent);
-  font-weight: 600;
-}
 
 /* ---------- Reminder window + bell countdown ---------- */
 .rem-sep {
