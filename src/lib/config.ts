@@ -35,6 +35,7 @@ export interface Config {
   reminderWindow: boolean; // restrict reminders to an active-hours window
   reminderFrom: string; // "HH:MM" window start
   reminderTo: string; // "HH:MM" window end
+  reminderNotify: boolean; // app-level toggle for desktop notifications (when permission granted)
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -63,6 +64,7 @@ export const DEFAULT_CONFIG: Config = {
   reminderWindow: false,
   reminderFrom: "09:00",
   reminderTo: "17:00",
+  reminderNotify: true,
 };
 
 const STORAGE_KEY = "flipit";

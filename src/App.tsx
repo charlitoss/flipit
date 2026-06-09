@@ -57,7 +57,7 @@ export default function App() {
   const fireAlert = useCallback((title: string, body: string, soundFn: () => void) => {
     if (!IS_EMBED) {
       soundFn();
-      showNotification(title, body);
+      if (configRef.current.reminderNotify) showNotification(title, body);
       setToast({ id: Date.now(), title, body });
       window.clearTimeout(toastTimer.current);
       toastTimer.current = window.setTimeout(() => setToast(null), 6000);
@@ -349,6 +349,7 @@ export default function App() {
               window={config.reminderWindow}
               from={config.reminderFrom}
               to={config.reminderTo}
+              notify={config.reminderNotify}
               onToggle={(reminderOn) => {
                 if (reminderOn) unlockAudio();
                 update(reminderOn ? { reminderOn, reminderLast: Date.now() } : { reminderOn });
@@ -358,6 +359,7 @@ export default function App() {
               onWindow={(reminderWindow) => update({ reminderWindow })}
               onFrom={(reminderFrom) => update({ reminderFrom })}
               onTo={(reminderTo) => update({ reminderTo })}
+              onNotify={(reminderNotify) => update({ reminderNotify })}
             />
           )}
 

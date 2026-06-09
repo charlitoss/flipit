@@ -8,12 +8,14 @@ interface Props {
   window: boolean;
   from: string;
   to: string;
+  notify: boolean;
   onToggle: (on: boolean) => void;
   onEvery: (minutes: number) => void;
   onLabel: (label: string) => void;
   onWindow: (on: boolean) => void;
   onFrom: (hhmm: string) => void;
   onTo: (hhmm: string) => void;
+  onNotify: (on: boolean) => void;
 }
 
 const PRESETS = [30, 45, 60];
@@ -25,12 +27,14 @@ export default function RemindersPopover({
   window: win,
   from,
   to,
+  notify,
   onToggle,
   onEvery,
   onLabel,
   onWindow,
   onFrom,
   onTo,
+  onNotify,
 }: Props) {
   const [perm, setPerm] = useState<NotificationPermission>(notifyPermission());
 
@@ -88,22 +92,34 @@ export default function RemindersPopover({
         </div>
       )}
 
-      <div className="rem-note">
-        {!notifySupported() ? (
-          <span>Notifications aren’t supported in this browser. Reminders still chime + show a banner.</span>
-        ) : perm === "granted" ? (
-          <span className="rem-ok">✓ Desktop notifications enabled</span>
-        ) : perm === "denied" ? (
-          <span>Notifications are blocked in your browser settings. Reminders still chime + show a banner.</span>
-        ) : (
-          <button
-            className="btn-ghost compact"
-            onClick={async () => setPerm(await requestNotify())}
-          >
-            Enable desktop notifications
-          </button>
-        )}
-      </div>
+      {perm === "granted" ? (
+        <div className="toggle-row rem-sep">
+          <span>Desktop notifications</span>
+          <label className="switch">
+            <input type="checkbox" checked={notify} onChange={(e) => onNotify(e.target.checked)} />
+            <span className="track" />
+          </label>
+        </div>
+      ) : (
+        <div className="rem-note">
+          {!notifySupported() ? (
+            <span>Notifications aren’t supported in this browser. Reminders still chime + show a banner.</span>
+          ) : perm === "denied" ? (
+            <span>Notifications are blocked in your browser settings. Reminders still chime + show a banner.</span>
+          ) : (
+            <button
+              className="btn-ghost compact"
+              onClick={async () => {
+                const p = await requestNotify();
+                setPerm(p);
+                if (p === "granted") onNotify(true);
+              }}
+            >
+              Enable desktop notifications
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
