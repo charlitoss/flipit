@@ -1205,6 +1205,46 @@ body.crt-on .pixel-board {
   margin-top: 2px;
 }
 
+/* ---------- In-dropdown break panel (prompt + active break) ---------- */
+/* The reminders dropdown swaps its settings for this focused panel while a
+   break prompt is up or a break is running. */
+.rem-break {
+  text-align: center;
+}
+.rem-break h3 {
+  margin-bottom: 10px;
+}
+.break-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ui);
+}
+.break-clock {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--ui);
+  font-variant-numeric: tabular-nums;
+}
+.break-sub {
+  font-size: 12px;
+  color: var(--ui-dim);
+  margin-top: 6px;
+}
+.break-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.break-actions .btn-primary.compact,
+.break-actions .btn-ghost {
+  flex: 1;
+  width: auto;
+  margin-top: 0;
+  white-space: nowrap;
+}
+
 /* ---------- Reminders popover ---------- */
 #remindersPop {
   position: fixed;
@@ -1323,6 +1363,28 @@ body.light .rem-input {
 .bell-btn.bell-on {
   padding: 0 14px 0 12px;
 }
+/* A break is waiting to be taken — ping the bell so the closed dropdown
+   doesn't swallow the nudge. */
+.bell-btn.bell-alert {
+  animation: bell-pulse 1.5s ease-in-out infinite;
+}
+@keyframes bell-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bell-btn.bell-alert {
+    animation: none;
+    border-color: var(--accent);
+  }
+}
 .bell-cd-wrap {
   display: flex;
   align-items: center;
@@ -1363,6 +1425,36 @@ body.light .rem-input {
 }
 body.light .bell-btn.bell-on:hover .bell-cd-value {
   color: #000;
+}
+/* Scrolling reminder message shown under "Break now" while a prompt is up. */
+.bell-marquee {
+  display: block;
+  width: 104px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+.bell-marquee__track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: bell-marquee 7s linear infinite;
+}
+.bell-marquee__seg {
+  padding-right: 22px;
+}
+@keyframes bell-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bell-marquee__track {
+    animation: none;
+  }
 }
 
 /* ---------- Export / share popover ---------- */
