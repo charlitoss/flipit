@@ -7,6 +7,8 @@ interface Props {
   onClockFormat: (f: "12" | "24") => void;
   onClockSeconds: (v: boolean) => void;
   onStartCountdown: (patch: Partial<Config>) => void;
+  onClearCountdown: () => void;
+  onCdDone: (text: string) => void;
   onMessageChange: (text: string) => void;
   onReplay: () => void;
 }
@@ -46,8 +48,9 @@ function ClockControls({ config, onClockFormat, onClockSeconds }: Props) {
   );
 }
 
-function CountdownControls({ config, onStartCountdown }: Props) {
+function CountdownControls({ config, onStartCountdown, onClearCountdown, onCdDone }: Props) {
   const dur = config.cdDuration;
+  const active = config.cdEnd !== null;
   const [target, setTarget] = useState(config.cdTarget || "");
   const [h, setH] = useState(String(Math.floor(dur / 3600)));
   const [m, setM] = useState(String(Math.floor((dur % 3600) / 60)));
@@ -82,9 +85,25 @@ function CountdownControls({ config, onStartCountdown }: Props) {
       </div>
       <span className="ctl-label ctl-or">or</span>
       <input className="ctl-date" type="datetime-local" value={target} onChange={(e) => setTarget(e.target.value)} />
+      <div className="ctl-group">
+        <span className="ctl-label">Ends</span>
+        <input
+          className="ctl-text"
+          type="text"
+          maxLength={40}
+          placeholder="TIMES UP"
+          value={config.cdDone}
+          onChange={(e) => onCdDone(e.target.value)}
+        />
+      </div>
       <button className="btn-primary compact" onClick={start}>
-        Start
+        {active ? "Restart" : "Start"}
       </button>
+      {active && (
+        <button className="btn-ghost compact" onClick={onClearCountdown}>
+          Clear
+        </button>
+      )}
     </>
   );
 }

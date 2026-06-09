@@ -357,6 +357,8 @@ export default function App() {
             onClockFormat={(clockFormat) => update({ clockFormat })}
             onClockSeconds={(clockSeconds) => update({ clockSeconds })}
             onStartCountdown={startCountdown}
+            onClearCountdown={() => update({ cdEnd: null, cdTarget: null })}
+            onCdDone={(cdDone) => update({ cdDone })}
             onMessageChange={(message) => update({ message })}
             onReplay={replayMessage}
           />
