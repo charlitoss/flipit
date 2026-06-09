@@ -15,7 +15,7 @@ import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
 import { tick, chime, unlockAudio } from "./lib/sound";
 import { showNotification } from "./lib/notify";
-import { withinReminderWindow } from "./lib/reminders";
+import { withinReminderWindow, nextBreakMs } from "./lib/reminders";
 import { applyPaletteVars, isLightPalette, PALETTES, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
 import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
@@ -38,6 +38,9 @@ export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
   const [openPop, setOpenPop] = useState<Pop>("none");
   const [replayNonce, setReplayNonce] = useState(0);
+  // Brief collapse of the bell pill when a break starts (a visible "shrink").
+  const [pillBeat, setPillBeat] = useState(false);
+  const pillBeatTimer = useRef<number>();
 
   const boardRef = useRef<Board | null>(null);
   const openPopRef = useRef<Pop>(openPop);
@@ -184,8 +187,8 @@ export default function App() {
     const everyMs = Math.max(1, config.reminderEvery) * 60_000;
     const id = window.setInterval(() => {
       const c = configRef.current;
-      // Don't nag while a prompt is up or a break is in progress.
-      if (c.breakPrompt || c.breakEnd !== null) return;
+      // Don't nag while paused, a prompt is up, or a break is in progress.
+      if (c.reminderPaused || c.breakPrompt || c.breakEnd !== null) return;
       const last = c.reminderLast || Date.now();
       if (Date.now() - last < everyMs) return;
       // Respect the active-hours window; just slide the anchor while off-hours.
@@ -219,7 +222,26 @@ export default function App() {
     unlockAudio(); // user gesture — lets the end-of-break chime play later
     const len = Math.max(1, configRef.current.breakLength);
     update({ breakPrompt: false, breakEnd: Date.now() + len * 60_000 });
+    // Dismiss the dropdown and play a quick collapse so the widget visibly
+    // shrinks from the wide prompt down to the compact break timer.
+    setOpenPop("none");
+    setPillBeat(true);
+    window.clearTimeout(pillBeatTimer.current);
+    pillBeatTimer.current = window.setTimeout(() => setPillBeat(false), 320);
   }, [update]);
+
+  // Quick pause / resume of the next-break countdown from the bell pill.
+  const togglePauseReminders = useCallback(() => {
+    setConfig((c) => {
+      if (c.reminderPaused) {
+        // Resume: re-anchor so the frozen remaining time keeps counting down.
+        const everyMs = Math.max(1, c.reminderEvery) * 60_000;
+        const left = Math.min(everyMs, Math.max(0, c.reminderPausedLeft));
+        return { ...c, reminderPaused: false, reminderLast: Date.now() - (everyMs - left) };
+      }
+      return { ...c, reminderPaused: true, reminderPausedLeft: nextBreakMs(c) };
+    });
+  }, []);
   const skipBreak = useCallback(() => {
     // Skipped: the next interval starts right now. Close the dropdown so we
     // don't snap from the prompt straight to the settings view.
@@ -357,9 +379,11 @@ export default function App() {
             mode={config.mode}
             sound={config.sound}
             reminderOn={config.reminderOn}
+            pillBeat={pillBeat}
             onMode={onMode}
             onToggleSound={toggleSound}
             onToggleReminders={() => togglePop("reminders")}
+            onTogglePause={togglePauseReminders}
             onToggleAppearance={() => togglePop("palette")}
             onFullscreen={fullscreen}
             onToggleExport={() => togglePop("export")}
@@ -424,8 +448,8 @@ export default function App() {
                 if (reminderOn) unlockAudio();
                 update(
                   reminderOn
-                    ? { reminderOn, reminderLast: Date.now() }
-                    : { reminderOn, breakPrompt: false, breakEnd: null }
+                    ? { reminderOn, reminderLast: Date.now(), reminderPaused: false }
+                    : { reminderOn, breakPrompt: false, breakEnd: null, reminderPaused: false }
                 );
               }}
               onEvery={(reminderEvery) => update({ reminderEvery })}

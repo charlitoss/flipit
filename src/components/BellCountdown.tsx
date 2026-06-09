@@ -31,6 +31,9 @@ export default function BellCountdown({ config }: { config: Config }) {
         </span>
       </span>
     );
+  } else if (config.reminderPaused) {
+    label = "Paused";
+    value = fmtMs(config.reminderPausedLeft);
   } else if (!withinReminderWindow(config)) {
     label = "Breaks paused";
     value = "Off hours";

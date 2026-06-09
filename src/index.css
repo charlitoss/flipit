@@ -1361,7 +1361,50 @@ body.light .rem-input {
   transition: background 0.2s, color 0.2s, transform 0.1s, padding 0.28s ease;
 }
 .bell-btn.bell-on {
-  padding: 0 14px 0 12px;
+  padding: 0 7px 0 12px;
+}
+/* The pill is a container: a "face" button (icon + countdown, opens the
+   dropdown) and an optional quick pause/resume button on the right. */
+.bell-face {
+  display: inline-flex;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  min-width: 38px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.bell-pause {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-left: 3px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ui-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.bell-pause:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--ui);
+}
+body.light .bell-pause:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+.bell-pause svg {
+  width: 13px;
+  height: 13px;
 }
 /* A break is waiting to be taken — ping the bell so the closed dropdown
    doesn't swallow the nudge. */
@@ -1398,6 +1441,13 @@ body.light .rem-input {
   max-width: 130px;
   margin-left: 7px;
   opacity: 1;
+}
+/* "Take a break" plays a quick collapse so the pill visibly shrinks from the
+   wide prompt down to the compact break timer. */
+.bell-btn.bell-collapse .bell-cd-wrap {
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
 }
 .bell-cd {
   position: relative;
