@@ -11,7 +11,7 @@ The split-flap mechanism is a small, framework-agnostic TypeScript engine (imper
   - **Countdown** — count down to a date & time or a quick H/M/S duration, with a custom "finished" label
   - **Message** — multi-line departure-board text (letters, numbers & `. , : ' ! ? - / & @ # % +`)
 - **Break reminders** — an optional recurring nudge ("stand up and move") every 30/45/60 min in any mode, with a custom label and an optional active-hours window. A small "next break" countdown widget shows on every screen, and a chime + on-screen toast + browser notification fire each time (notifications reach you even when Flipit isn't the active tab, with a graceful toast + chime fallback)
-- **Four display styles** — the **Split-flap** (Solari) board; a **digital LED** 14-segment alphanumeric display (5 colors); a **Pixel** display using Vercel's Geist Pixel font (Square / Grid / Line variants + 6 retro color presets, each with a matching backdrop and a toggleable, GPU-light **CRT overlay**); or a **Dot-matrix** panel — a 5×7 LED matrix with lit/unlit cells (6 color presets, and rounded / square / round cell shapes)
+- **Four display styles** — the **Split-flap** (Solari) board; a **digital LED** 14-segment alphanumeric display (5 colors); a **CRT** display using Vercel's Geist Pixel font (Square / Grid / Line variants + 6 retro color presets, each with a matching backdrop and a GPU-light **CRT effect** — scanlines, chromatic aberration, bloom, flicker and vignette — with an adjustable intensity slider); or a **Dot-matrix** panel — a 5×7 LED matrix with lit/unlit cells (6 color presets, and rounded / square / round cell shapes)
 - **Airport flutter** — each split-flap cell clatters through random characters and the board resolves in a left-to-right wave, just like a real Solari board. Editing a message only re-flips the letters that changed.
 - **10 color palettes** — Onyx, Slate, Midnight, Forest, Crimson, Synthwave, Amber (dark) + Departures, Paper, Mint (light)
 - **6 board fonts** (Google Fonts) across clean, condensed (Oswald, Archivo Narrow) and modern (Orbitron, Bungee) styles
@@ -75,9 +75,9 @@ src/
     FlipBoard.tsx       Split-flap board: mounts the engine; runs the render loop
     LedBoard.tsx        Digital LED (14-segment) board
     LedChar.tsx         One 14-segment LED character
-    PixelBoard.tsx      Pixel display (Geist Pixel font)
+    PixelBoard.tsx      CRT display (Geist Pixel font)
     DotMatrixBoard.tsx  Dot-matrix LED panel (5x7)
-    CrtOverlay.tsx      CRT overlay for Pixel mode (CSS + SVG)
+    CrtOverlay.tsx      CRT scanline/vignette overlay (CRT style)
     Toolbar.tsx         Mode switcher + tool buttons
     ModeControls.tsx    On-screen per-mode controls (clock / countdown / message)
     AppearancePopover.tsx  Combined color palette + board font picker

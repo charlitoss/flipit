@@ -85,8 +85,10 @@ export default function App() {
     const isPixel = config.style === "pixel";
     document.body.classList.toggle("pv-dots", isPixel && config.pixelVariant !== "line");
     document.body.classList.toggle("pv-lines", isPixel && config.pixelVariant === "line");
-    document.body.classList.toggle("crt-on", isPixel && config.crt);
-  }, [config.style, config.pixelVariant, config.crt]);
+    document.body.classList.toggle("crt-on", isPixel && config.crtIntensity > 0);
+    // CRT effect strength as a 0–1 factor (0.5 = the baseline look) for the CSS.
+    document.body.style.setProperty("--crt", String(config.crtIntensity / 100));
+  }, [config.style, config.pixelVariant, config.crtIntensity]);
 
   // Light chrome only for light palettes in the flip style; LED/Pixel are dark.
   useLayoutEffect(() => {
@@ -264,7 +266,7 @@ export default function App() {
       ) : config.style === "pixel" ? (
         <>
           <PixelBoard config={config} isEmbed={IS_EMBED} />
-          {config.crt && <CrtOverlay />}
+          {config.crtIntensity > 0 && <CrtOverlay />}
         </>
       ) : config.style === "matrix" ? (
         <DotMatrixBoard config={config} isEmbed={IS_EMBED} />
@@ -320,7 +322,7 @@ export default function App() {
               pixelColor={config.pixelColor}
               matrixColor={config.matrixColor}
               matrixShape={config.matrixShape}
-              crt={config.crt}
+              crtIntensity={config.crtIntensity}
               onSelectStyle={(style) => update({ style })}
               onSelectPalette={(palette) => update({ palette })}
               onSelectFont={(font) => update({ font })}
@@ -329,7 +331,7 @@ export default function App() {
               onSelectPixelColor={(pixelColor) => update({ pixelColor })}
               onSelectMatrixColor={(matrixColor) => update({ matrixColor })}
               onSelectMatrixShape={(matrixShape) => update({ matrixShape })}
-              onToggleCrt={(crt) => update({ crt })}
+              onCrtIntensity={(crtIntensity) => update({ crtIntensity })}
             />
           )}
 

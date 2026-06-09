@@ -14,7 +14,7 @@ interface Props {
   pixelColor: string;
   matrixColor: string;
   matrixShape: string;
-  crt: boolean;
+  crtIntensity: number;
   onSelectStyle: (s: DisplayStyle) => void;
   onSelectPalette: (key: string) => void;
   onSelectFont: (key: string) => void;
@@ -23,7 +23,7 @@ interface Props {
   onSelectPixelColor: (key: string) => void;
   onSelectMatrixColor: (key: string) => void;
   onSelectMatrixShape: (key: string) => void;
-  onToggleCrt: (v: boolean) => void;
+  onCrtIntensity: (v: number) => void;
 }
 
 export default function AppearancePopover({
@@ -35,16 +35,16 @@ export default function AppearancePopover({
   pixelColor,
   matrixColor,
   matrixShape,
-  crt,
+  crtIntensity,
   onSelectStyle,
   onSelectPalette,
   onSelectFont,
   onSelectLed,
   onSelectPixel,
   onSelectPixelColor,
+  onCrtIntensity,
   onSelectMatrixColor,
   onSelectMatrixShape,
-  onToggleCrt,
 }: Props) {
   return (
     <div id="palettePop" className="popover">
@@ -57,7 +57,7 @@ export default function AppearancePopover({
           LED
         </button>
         <button className={style === "pixel" ? "active" : ""} onClick={() => onSelectStyle("pixel")}>
-          Pixel
+          CRT
         </button>
         <button className={style === "matrix" ? "active" : ""} onClick={() => onSelectStyle("matrix")}>
           Matrix
@@ -118,16 +118,17 @@ export default function AppearancePopover({
             ))}
           </div>
 
-          <div className="appearance-toggle">
+          <div className="appearance-slider">
             <span>CRT effect</span>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={crt}
-                onChange={(e) => onToggleCrt(e.target.checked)}
-              />
-              <span className="track" />
-            </label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={crtIntensity}
+              aria-label="CRT effect intensity"
+              onChange={(e) => onCrtIntensity(+e.target.value)}
+            />
           </div>
         </>
       )}

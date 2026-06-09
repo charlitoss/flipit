@@ -21,7 +21,7 @@ export interface Config {
   pixelColor: string;
   matrixColor: string;
   matrixShape: string;
-  crt: boolean; // CRT overlay for the pixel style
+  crtIntensity: number; // CRT effect strength 0–100 (50 = baseline) for the CRT style
   cdTarget: string | null; // datetime-local string, for the input
   cdDuration: number; // seconds, fallback when no active countdown
   cdEnd: number | null; // active end timestamp (ms)
@@ -51,7 +51,7 @@ export const DEFAULT_CONFIG: Config = {
   pixelColor: "white",
   matrixColor: "white",
   matrixShape: "rounded",
-  crt: true,
+  crtIntensity: 50,
   cdTarget: null,
   cdDuration: 600,
   cdEnd: null,
@@ -97,7 +97,7 @@ export function encodeCfg(c: Config): string {
     Math.max(0, STYLE_KEYS.indexOf(c.style)),
     Math.max(0, LED_KEYS.indexOf(c.ledColor)),
     Math.max(0, PIXEL_KEYS.indexOf(c.pixelVariant)),
-    c.crt ? 1 : 0,
+    Math.max(0, Math.min(100, Math.round(c.crtIntensity))),
     Math.max(0, PIXEL_COLOR_KEYS.indexOf(c.pixelColor)),
     Math.max(0, MATRIX_COLOR_KEYS.indexOf(c.matrixColor)),
     Math.max(0, MATRIX_SHAPE_KEYS.indexOf(c.matrixShape)),
@@ -122,7 +122,7 @@ export function decodeCfg(s: string): Partial<Config> | null {
     o.style = STYLE_KEYS[a[3]] || "flip";
     if (LED_KEYS[a[4]]) o.ledColor = LED_KEYS[a[4]];
     if (PIXEL_KEYS[a[5]]) o.pixelVariant = PIXEL_KEYS[a[5]];
-    o.crt = a[6] === undefined ? true : !!a[6];
+    o.crtIntensity = typeof a[6] === "number" ? Math.max(0, Math.min(100, a[6])) : 50;
     if (PIXEL_COLOR_KEYS[a[7]]) o.pixelColor = PIXEL_COLOR_KEYS[a[7]];
     if (MATRIX_COLOR_KEYS[a[8]]) o.matrixColor = MATRIX_COLOR_KEYS[a[8]];
     if (MATRIX_SHAPE_KEYS[a[9]]) o.matrixShape = MATRIX_SHAPE_KEYS[a[9]];

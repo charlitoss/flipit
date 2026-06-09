@@ -1032,11 +1032,12 @@ body.pixel-mode #caption-top {
    The overlay sits above the display (z 10) but below the controls (z 18+). */
 body.crt-on .pixel-board {
   /* chromatic aberration (scaled to the pixel size) + phosphor bloom — both
-     far cheaper than an SVG filter (only repaint when the glyphs change) */
+     far cheaper than an SVG filter (only repaint when the glyphs change).
+     Every value scales with --crt (0–1; 0.5 = baseline) from the intensity slider. */
   text-shadow:
-    calc(var(--px-bg, 8px) * -0.22) 0 0 rgba(255, 45, 70, 0.75),
-    calc(var(--px-bg, 8px) * 0.22) 0 0 rgba(35, 150, 255, 0.75),
-    0 0 calc(var(--px-bg, 8px) * 0.55) var(--pixel-glow, rgba(255, 255, 255, 0.55));
+    calc(var(--px-bg, 8px) * var(--crt, 0.5) * -0.44) 0 0 rgba(255, 45, 70, 0.75),
+    calc(var(--px-bg, 8px) * var(--crt, 0.5) * 0.44) 0 0 rgba(35, 150, 255, 0.75),
+    0 0 calc(var(--px-bg, 8px) * var(--crt, 0.5) * 1.1) var(--pixel-glow, rgba(255, 255, 255, 0.55));
 }
 .crt-overlay {
   position: fixed;
@@ -1050,8 +1051,8 @@ body.crt-on .pixel-board {
   inset: 0;
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.42) 0px,
-    rgba(0, 0, 0, 0.42) 1.5px,
+    rgba(0, 0, 0, calc(var(--crt, 0.5) * 0.84)) 0px,
+    rgba(0, 0, 0, calc(var(--crt, 0.5) * 0.84)) 1.5px,
     transparent 1.5px,
     transparent 4px
   );
@@ -1063,7 +1064,7 @@ body.crt-on .pixel-board {
 .crt-overlay__vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 48%, rgba(0, 0, 0, 0.5) 100%);
+  background: radial-gradient(ellipse at center, transparent 48%, rgba(0, 0, 0, var(--crt, 0.5)) 100%);
 }
 @keyframes crt-flicker {
   0% {
@@ -1151,7 +1152,8 @@ body.crt-on .pixel-board {
   letter-spacing: 0.04em;
   color: var(--ui-dim);
 }
-.appearance-toggle {
+.appearance-toggle,
+.appearance-slider {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1160,6 +1162,17 @@ body.crt-on .pixel-board {
   border-top: 1px solid var(--ui-border);
   font-size: 13px;
   color: var(--ui);
+}
+.appearance-slider span {
+  white-space: nowrap;
+}
+.appearance-slider input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  max-width: 150px;
+  margin-left: 12px;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 
 /* ---------- Toast (reminder alerts) ---------- */
