@@ -232,6 +232,16 @@ export default function App() {
     setOpenPop("none");
   }, [update]);
 
+  // Surface the prompt: when a break becomes pending, auto-open the bell
+  // dropdown (and wake the chrome) so Take a break / Skip are visible without a
+  // click. Runs only on the transition into the prompt, so the user can still
+  // close it; the pulsing pill keeps flagging it.
+  useEffect(() => {
+    if (IS_EMBED || !config.breakPrompt) return;
+    setOpenPop("reminders");
+    document.body.classList.remove("idle");
+  }, [config.breakPrompt]);
+
   // ----- Keyboard shortcuts (skip in embed) -----
   useEffect(() => {
     if (IS_EMBED) return;
@@ -258,7 +268,10 @@ export default function App() {
   // is open or while interacting with the on-screen controls. -----
   useEffect(() => {
     if (IS_EMBED) return;
-    document.body.classList.add("idle"); // hidden until the first movement
+    // Hidden until the first movement — unless a break prompt is already
+    // pending (e.g. restored on reload), in which case the auto-opened
+    // dropdown needs the chrome visible.
+    if (!configRef.current.breakPrompt) document.body.classList.add("idle");
     let t: number | undefined;
     const interacting = () => {
       if (openPopRef.current !== "none") return true;

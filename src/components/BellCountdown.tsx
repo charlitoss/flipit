@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import type { Config } from "../lib/config";
 import { withinReminderWindow, nextBreakMs, breakLeftMs, fmtMs } from "../lib/reminders";
 
@@ -14,13 +15,22 @@ export default function BellCountdown({ config }: { config: Config }) {
   }, [config.reminderOn]);
 
   let label: string;
-  let value: string;
+  let value: ReactNode;
   if (config.breakEnd !== null) {
     label = "On break";
     value = fmtMs(breakLeftMs(config));
   } else if (config.breakPrompt) {
-    label = "Break ready";
-    value = "Now";
+    // Prompt pending — scroll the user's reminder message under "Break now".
+    const msg = config.reminderLabel || "Stand up and move";
+    label = "Break now";
+    value = (
+      <span className="bell-marquee" aria-label={msg}>
+        <span className="bell-marquee__track" aria-hidden="true">
+          <span className="bell-marquee__seg">{msg}</span>
+          <span className="bell-marquee__seg">{msg}</span>
+        </span>
+      </span>
+    );
   } else if (!withinReminderWindow(config)) {
     label = "Breaks paused";
     value = "Off hours";
