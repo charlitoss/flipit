@@ -60,13 +60,13 @@ export default function FlipBoard({
     return () => window.clearInterval(id);
   }, [config.mode, config.clockFormat, config.clockSeconds, boardRef, setCaption]);
 
-  // Countdown loop. The board holds at 00:00:00 once finished; the alarm fires
-  // once, on the transition to zero (not if it loads already expired).
+  // Countdown loop. Reveals the end message once finished; the alarm fires once,
+  // on the transition to zero (not if it loads already expired).
   useEffect(() => {
     if (config.mode !== "countdown") return;
     const board = boardRef.current;
     if (!board) return;
-    const cd = { cdEnd: config.cdEnd, cdDuration: config.cdDuration };
+    const cd = { cdEnd: config.cdEnd, cdDuration: config.cdDuration, cdDone: config.cdDone };
     let sawRunning = false;
     let firedAlarm = false;
     const run = () => {
@@ -82,7 +82,7 @@ export default function FlipBoard({
     run();
     const id = window.setInterval(run, 250);
     return () => window.clearInterval(id);
-  }, [config.mode, config.cdEnd, config.cdDuration, boardRef, setCaption]);
+  }, [config.mode, config.cdEnd, config.cdDuration, config.cdDone, boardRef, setCaption]);
 
   // Message: render on text change without forcing a relayout (so only the
   // changed letters flip). A replayNonce bump forces a full rebuild + flutter.

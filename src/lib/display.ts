@@ -65,10 +65,10 @@ function countdownString(remainingSec: number): string {
   return pad(h) + ":" + pad(m) + ":" + pad(s);
 }
 
-// Returns true once the countdown has reached zero (held at 00:00:00).
+// Returns true once the countdown has reached zero (then it shows the end message).
 export function renderCountdown(
   board: Board,
-  cd: Pick<Config, "cdEnd" | "cdDuration">,
+  cd: Pick<Config, "cdEnd" | "cdDuration" | "cdDone">,
   setCaption: SetCaption
 ): boolean {
   if (!cd.cdEnd) {
@@ -80,14 +80,18 @@ export function renderCountdown(
     return false;
   }
   const remaining = (cd.cdEnd - Date.now()) / 1000;
-  const str = countdownString(remaining); // clamps to 00:00:00 at/after zero
-  board.setLayout([str], buildSepCols(str));
-  board.render([str]);
   if (remaining <= 0) {
-    // Hold at 00:00:00 until a new countdown is started.
-    setCaption("Finished", "");
+    // Reveal the end message on the board (setLayout is idempotent, so it only
+    // rebuilds on the transition — no re-flutter while it holds).
+    const lines = layoutMessage(cd.cdDone || "TIMES UP");
+    board.setLayout(lines);
+    board.render(lines);
+    setCaption("", "");
     return true;
   }
+  const str = countdownString(remaining);
+  board.setLayout([str], buildSepCols(str));
+  board.render([str]);
   const end = new Date(cd.cdEnd);
   setCaption("Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), "");
   return false;
@@ -137,8 +141,10 @@ export function getDisplayState(config: Config): DisplayState {
       return { lines: [countdownString(config.cdDuration)], caption: "", atZero: false };
     }
     const remaining = (config.cdEnd - Date.now()) / 1000;
+    if (remaining <= 0) {
+      return { lines: layoutMessage(config.cdDone || "TIMES UP"), caption: "", atZero: true };
+    }
     const str = countdownString(remaining);
-    if (remaining <= 0) return { lines: [str], caption: "Finished", atZero: true };
     const end = new Date(config.cdEnd);
     const caption =
       "Until " + end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
