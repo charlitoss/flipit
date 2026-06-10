@@ -87,7 +87,10 @@ export default function LedBoard({ config, isEmbed }: { config: Config; isEmbed:
         {state.lines.map((line, i) => (
           <div className="led-row" key={i}>
             {[...line].map((ch, j) => (
-              <span className="led-cell" key={j}>
+              <span
+                className={"led-cell" + (ch === ":" && config.mode === "clock" ? " clock-colon" : "")}
+                key={j}
+              >
                 <LedChar ch={ch} />
               </span>
             ))}

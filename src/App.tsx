@@ -137,6 +137,27 @@ export default function App() {
     setFlipSound(config.sound ? tick : null);
   }, [config.sound]);
 
+  // Blink the clock colon in sync with the seconds. We just toggle a body class
+  // on each half-second boundary; every board marks its ":" cells .clock-colon
+  // and the CSS fades them. Aligned to the wall clock so it tracks the seconds.
+  useEffect(() => {
+    if (config.mode !== "clock") {
+      document.body.classList.remove("colon-off");
+      return;
+    }
+    let timer: number | undefined;
+    const beat = () => {
+      const ms = Date.now() % 1000;
+      document.body.classList.toggle("colon-off", ms >= 500);
+      timer = window.setTimeout(beat, (ms < 500 ? 500 - ms : 1000 - ms) + 4);
+    };
+    beat();
+    return () => {
+      window.clearTimeout(timer);
+      document.body.classList.remove("colon-off");
+    };
+  }, [config.mode]);
+
   useLayoutEffect(() => {
     document.body.classList.toggle("embed", IS_EMBED);
     // Shared (non-embed) link: apply once, then clean the URL so the visitor's

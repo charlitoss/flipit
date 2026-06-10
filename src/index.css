@@ -78,6 +78,15 @@ body.idle {
   cursor: pointer;
 }
 
+/* Blinking clock colon: App toggles `colon-off` on each half-second boundary;
+   every board tags its ":" cells .clock-colon. A short fade keeps it smooth. */
+.clock-colon {
+  transition: opacity 0.1s linear;
+}
+body.colon-off .clock-colon {
+  opacity: 0;
+}
+
 /* Caption shown above the board (e.g. the date on the clock). */
 #caption-top {
   text-align: center;

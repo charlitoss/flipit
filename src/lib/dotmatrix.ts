@@ -58,12 +58,22 @@ function glyphRows(ch: string): string[] {
   return G[ch] || G[ch.toUpperCase()] || BLANK;
 }
 
-// One text line -> 7 rows of booleans (glyphs joined with a 1-col gap).
-function lineGrid(text: string): boolean[][] {
+type Glyph = (ch: string) => string[];
+
+// Same width as the real glyph but blank — keeps the mask aligned to the grid.
+function colonGlyph(ch: string): string[] {
+  const g = glyphRows(ch);
+  return ch === ":" ? g : g.map((row) => "0".repeat(row.length));
+}
+
+// One text line -> 7 rows of booleans (glyphs joined with a 1-col gap). The
+// glyph picker lets us build either the lit grid (glyphRows) or a mask of just
+// the colon cells (colonGlyph) at identical dimensions.
+function lineGrid(text: string, glyph: Glyph = glyphRows): boolean[][] {
   const chars = [...text];
   const rows: string[] = Array.from({ length: DM_H }, () => "");
   chars.forEach((ch, idx) => {
-    const g = glyphRows(ch);
+    const g = glyph(ch);
     const w = g[0].length;
     for (let r = 0; r < DM_H; r++) {
       rows[r] += g[r] || "0".repeat(w);
@@ -137,8 +147,8 @@ export function applyMatrix(key: string): void {
 
 // Build the full panel grid for one or more lines, with a 1-cell border of
 // unlit cells around the content (and a blank row between stacked lines).
-export function buildMatrix(lines: string[], padX = 1, padY = 1): boolean[][] {
-  const grids = (lines.length ? lines : [" "]).map(lineGrid);
+function assemble(lines: string[], padX: number, padY: number, glyph: Glyph): boolean[][] {
+  const grids = (lines.length ? lines : [" "]).map((l) => lineGrid(l, glyph));
   const width = Math.max(1, ...grids.map((g) => g[0].length));
   const out: boolean[][] = [];
   const blank = () => new Array(width + padX * 2).fill(false);
@@ -155,4 +165,14 @@ export function buildMatrix(lines: string[], padX = 1, padY = 1): boolean[][] {
   });
   for (let i = 0; i < padY; i++) out.push(blank());
   return out;
+}
+
+export function buildMatrix(lines: string[], padX = 1, padY = 1): boolean[][] {
+  return assemble(lines, padX, padY, glyphRows);
+}
+
+// A grid (same dimensions as buildMatrix) marking only the lit cells of ":"
+// glyphs, so the clock colon can be blinked in sync with the seconds.
+export function colonMask(lines: string[], padX = 1, padY = 1): boolean[][] {
+  return assemble(lines, padX, padY, colonGlyph);
 }

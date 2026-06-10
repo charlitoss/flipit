@@ -86,7 +86,14 @@ export default function PixelBoard({ config, isEmbed }: { config: Config; isEmbe
     grid ? (
       <div className="pixel-row grid" key={i}>
         {[...line].map((ch, j) => (
-          <span className={"pixel-cell" + (ch === ":" || ch === " " ? " narrow" : "")} key={j}>
+          <span
+            className={
+              "pixel-cell" +
+              (ch === ":" || ch === " " ? " narrow" : "") +
+              (ch === ":" && config.mode === "clock" ? " clock-colon" : "")
+            }
+            key={j}
+          >
             {ch}
           </span>
         ))}
