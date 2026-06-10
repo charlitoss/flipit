@@ -4,6 +4,7 @@ import {
   SoundOffIcon,
   PaletteIcon,
   FullscreenIcon,
+  ExitFullscreenIcon,
   ShareIcon,
   BellIcon,
 } from "./Icons";
@@ -19,6 +20,7 @@ interface Props {
   onToggleReminders: () => void;
   onToggleAppearance: () => void;
   onFullscreen: () => void;
+  fullscreenActive: boolean;
   onToggleExport: () => void;
 }
 
@@ -38,6 +40,7 @@ export default function Toolbar({
   onToggleReminders,
   onToggleAppearance,
   onFullscreen,
+  fullscreenActive,
   onToggleExport,
 }: Props) {
   return (
@@ -85,8 +88,13 @@ export default function Toolbar({
         >
           <PaletteIcon />
         </button>
-        <button className="icon-btn" title="Fullscreen" onClick={onFullscreen}>
-          <FullscreenIcon />
+        <button
+          className={"icon-btn" + (fullscreenActive ? " on" : "")}
+          title={fullscreenActive ? "Exit fullscreen" : "Fullscreen"}
+          aria-label={fullscreenActive ? "Exit fullscreen" : "Fullscreen"}
+          onClick={onFullscreen}
+        >
+          {fullscreenActive ? <ExitFullscreenIcon /> : <FullscreenIcon />}
         </button>
         <button className="icon-btn" title="Export & share" data-pop-trigger onClick={onToggleExport}>
           <ShareIcon />
