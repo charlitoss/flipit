@@ -77,6 +77,20 @@ body.idle {
 #stage.tappable {
   cursor: pointer;
 }
+/* Pseudo-fullscreen: the fallback for iPhone Safari, which exposes no element
+   Fullscreen API. We can't hide Safari's own bars from a web page, but we can
+   fill the *dynamic* viewport (100dvh tracks the bars as they retract) so the
+   board uses every available pixel. ("Add to Home Screen" gives true,
+   chrome-free fullscreen via the apple-mobile-web-app-capable meta tag.) */
+body.pseudo-fs {
+  overscroll-behavior: none;
+}
+body.pseudo-fs #stage {
+  bottom: auto;
+  height: 100dvh;
+  z-index: 40;
+  background: radial-gradient(120% 90% at 50% -10%, var(--bg-1), var(--bg-0) 70%);
+}
 
 /* Caption shown above the board (e.g. the date on the clock). */
 #caption-top {

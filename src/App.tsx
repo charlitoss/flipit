@@ -16,6 +16,12 @@ import { setFlipSound } from "./lib/flipEngine";
 import { tick, chime, unlockAudio } from "./lib/sound";
 import { showNotification } from "./lib/notify";
 import { withinReminderWindow } from "./lib/reminders";
+import {
+  nativeFullscreenSupported,
+  fullscreenElement,
+  enterFullscreen,
+  exitFullscreen,
+} from "./lib/fullscreen";
 import { applyPaletteVars, isLightPalette, PALETTES, PALETTE_KEYS } from "./lib/palettes";
 import { applyFont } from "./lib/fonts";
 import { applyLed, LED_BY_KEY, LED_COLORS } from "./lib/led";
@@ -38,6 +44,9 @@ export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
   const [openPop, setOpenPop] = useState<Pop>("none");
   const [replayNonce, setReplayNonce] = useState(0);
+  // Fullscreen: native where supported, else a CSS pseudo-fullscreen (iPhone).
+  const [nativeFs, setNativeFs] = useState(false);
+  const [pseudoFs, setPseudoFs] = useState(false);
 
   const boardRef = useRef<Board | null>(null);
   const openPopRef = useRef<Pop>(openPop);
@@ -159,9 +168,33 @@ export default function App() {
   }, []);
 
   const fullscreen = useCallback(() => {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
-    else document.exitFullscreen?.();
+    if (nativeFullscreenSupported()) {
+      if (fullscreenElement()) exitFullscreen();
+      else enterFullscreen();
+    } else {
+      // iPhone Safari has no element Fullscreen API — fall back to an
+      // immersive CSS layer that fills the dynamic viewport.
+      setPseudoFs((v) => !v);
+    }
   }, []);
+
+  // Keep the toolbar icon in sync with the real fullscreen state (incl. Esc /
+  // the OS leaving fullscreen). webkit-prefixed event covers Safari.
+  useEffect(() => {
+    const sync = () => setNativeFs(!!fullscreenElement());
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync);
+    return () => {
+      document.removeEventListener("fullscreenchange", sync);
+      document.removeEventListener("webkitfullscreenchange", sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("pseudo-fs", pseudoFs);
+  }, [pseudoFs]);
+
+  const fsActive = nativeFs || pseudoFs;
 
   // Bump a nonce to replay the airport flutter for the current message.
   const replayMessage = useCallback(() => setReplayNonce((n) => n + 1), []);
@@ -349,6 +382,7 @@ export default function App() {
             onToggleReminders={() => togglePop("reminders")}
             onToggleAppearance={() => togglePop("palette")}
             onFullscreen={fullscreen}
+            fullscreenActive={fsActive}
             onToggleExport={() => togglePop("export")}
           />
 
