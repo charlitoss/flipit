@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getDisplayState } from "../lib/display";
+import { alignedInterval } from "../lib/clockTick";
 import { alarm } from "../lib/sound";
 import { buildMatrix, colonMask, matrixRadius } from "../lib/dotmatrix";
 import type { Config } from "../lib/config";
@@ -66,8 +67,7 @@ export default function DotMatrixBoard({ config, isEmbed }: { config: Config; is
         }
       }
     };
-    const id = window.setInterval(tick, 250);
-    return () => window.clearInterval(id);
+    return alignedInterval(tick, 250);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     config.mode,

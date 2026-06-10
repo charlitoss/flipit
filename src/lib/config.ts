@@ -12,6 +12,7 @@ export interface Config {
   mode: Mode;
   clockFormat: "24" | "12";
   clockSeconds: boolean;
+  colonBlink: boolean; // blink the clock ":" in sync with the seconds
   sound: boolean;
   palette: string;
   font: string;
@@ -45,6 +46,7 @@ export const DEFAULT_CONFIG: Config = {
   mode: "clock",
   clockFormat: "24",
   clockSeconds: true,
+  colonBlink: false,
   sound: false,
   palette: "onyx",
   font: "default",
@@ -109,7 +111,7 @@ export function encodeCfg(c: Config): string {
     Math.max(0, MATRIX_SHAPE_KEYS.indexOf(c.matrixShape)),
   ];
   if (c.mode === "clock") {
-    arr.push(c.clockFormat === "12" ? 1 : 0, c.clockSeconds ? 1 : 0);
+    arr.push(c.clockFormat === "12" ? 1 : 0, c.clockSeconds ? 1 : 0, c.colonBlink ? 1 : 0);
   } else if (c.mode === "countdown") {
     arr.push(c.cdEnd || 0, c.cdDuration || 0, c.cdDone || "");
   } else {
@@ -135,6 +137,7 @@ export function decodeCfg(s: string): Partial<Config> | null {
     if (o.mode === "clock") {
       o.clockFormat = a[10] ? "12" : "24";
       o.clockSeconds = !!a[11];
+      o.colonBlink = !!a[12];
     } else if (o.mode === "countdown") {
       o.cdEnd = a[10] || null;
       o.cdDuration = a[11] || 600;

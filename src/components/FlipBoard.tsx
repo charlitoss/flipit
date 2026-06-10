@@ -1,6 +1,7 @@
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Board } from "../lib/flipEngine";
 import { renderClock, renderCountdown, renderMessage } from "../lib/display";
+import { alignedInterval } from "../lib/clockTick";
 import { alarm } from "../lib/sound";
 import type { Config } from "../lib/config";
 
@@ -56,8 +57,7 @@ export default function FlipBoard({
     const run = () => renderClock(board, config.clockFormat, config.clockSeconds, setCaption);
     board.forceRelayout(); // format/seconds changes rebuild for a clean swap
     run();
-    const id = window.setInterval(run, 250);
-    return () => window.clearInterval(id);
+    return alignedInterval(run, 250);
   }, [config.mode, config.clockFormat, config.clockSeconds, boardRef, setCaption]);
 
   // Countdown loop. The board holds at 00:00:00 once finished; the alarm fires
@@ -80,8 +80,7 @@ export default function FlipBoard({
     };
     board.forceRelayout();
     run();
-    const id = window.setInterval(run, 250);
-    return () => window.clearInterval(id);
+    return alignedInterval(run, 250);
   }, [config.mode, config.cdEnd, config.cdDuration, boardRef, setCaption]);
 
   // Message: render on text change without forcing a relayout (so only the

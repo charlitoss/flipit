@@ -141,7 +141,7 @@ export default function App() {
   // on each half-second boundary; every board marks its ":" cells .clock-colon
   // and the CSS fades them. Aligned to the wall clock so it tracks the seconds.
   useEffect(() => {
-    if (config.mode !== "clock") {
+    if (config.mode !== "clock" || !config.colonBlink) {
       document.body.classList.remove("colon-off");
       return;
     }
@@ -156,7 +156,7 @@ export default function App() {
       window.clearTimeout(timer);
       document.body.classList.remove("colon-off");
     };
-  }, [config.mode]);
+  }, [config.mode, config.colonBlink]);
 
   useLayoutEffect(() => {
     document.body.classList.toggle("embed", IS_EMBED);
@@ -377,6 +377,7 @@ export default function App() {
             config={config}
             onClockFormat={(clockFormat) => update({ clockFormat })}
             onClockSeconds={(clockSeconds) => update({ clockSeconds })}
+            onColonBlink={(colonBlink) => update({ colonBlink })}
             onStartCountdown={startCountdown}
             onMessageChange={(message) => update({ message })}
             onReplay={replayMessage}
