@@ -6,12 +6,13 @@ interface Props {
   config: Config;
   onClockFormat: (f: "12" | "24") => void;
   onClockSeconds: (v: boolean) => void;
+  onColonBlink: (v: boolean) => void;
   onStartCountdown: (patch: Partial<Config>) => void;
   onMessageChange: (text: string) => void;
   onReplay: () => void;
 }
 
-function ClockControls({ config, onClockFormat, onClockSeconds }: Props) {
+function ClockControls({ config, onClockFormat, onClockSeconds, onColonBlink }: Props) {
   return (
     <>
       <div className="ctl-group">
@@ -38,6 +39,17 @@ function ClockControls({ config, onClockFormat, onClockSeconds }: Props) {
             type="checkbox"
             checked={config.clockSeconds}
             onChange={(e) => onClockSeconds(e.target.checked)}
+          />
+          <span className="track" />
+        </label>
+      </div>
+      <div className="ctl-group">
+        <span className="ctl-label">Blink colon</span>
+        <label className="switch">
+          <input
+            type="checkbox"
+            checked={config.colonBlink}
+            onChange={(e) => onColonBlink(e.target.checked)}
           />
           <span className="track" />
         </label>

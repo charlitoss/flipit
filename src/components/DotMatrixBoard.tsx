@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { getDisplayState } from "../lib/display";
+import { alignedInterval } from "../lib/clockTick";
 import { alarm } from "../lib/sound";
-import { buildMatrix, matrixRadius } from "../lib/dotmatrix";
+import { buildMatrix, colonMask, matrixRadius } from "../lib/dotmatrix";
 import type { Config } from "../lib/config";
 
 const GAP_RATIO = 0.2; // cell gap as a fraction of cell size
@@ -13,11 +14,13 @@ function MatrixGrid({
   cell,
   radius,
   className,
+  colon,
 }: {
   grid: boolean[][];
   cell: number;
   radius: number; // corner radius as a fraction of the cell
   className?: string;
+  colon?: boolean[][] | null; // cells belonging to a ":" glyph (blinked)
 }) {
   const cols = grid[0]?.length || 1;
   return (
@@ -33,7 +36,7 @@ function MatrixGrid({
         row.map((on, c) => (
           <span
             key={r + "-" + c}
-            className={"dm-cell" + (on ? " on" : "")}
+            className={"dm-cell" + (on ? " on" : "") + (colon?.[r]?.[c] ? " clock-colon" : "")}
             style={{ borderRadius: cell * radius }}
           />
         ))
@@ -64,8 +67,7 @@ export default function DotMatrixBoard({ config, isEmbed }: { config: Config; is
         }
       }
     };
-    const id = window.setInterval(tick, 250);
-    return () => window.clearInterval(id);
+    return alignedInterval(tick, 250);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     config.mode,
@@ -77,6 +79,10 @@ export default function DotMatrixBoard({ config, isEmbed }: { config: Config; is
   ]);
 
   const grid = useMemo(() => buildMatrix(state.lines), [state.lines]);
+  const colon = useMemo(
+    () => (config.mode === "clock" ? colonMask(state.lines) : null),
+    [state.lines, config.mode]
+  );
   const capGrid = useMemo(
     () => (state.caption ? buildMatrix([state.caption.toUpperCase()], 0, 0) : null),
     [state.caption]
@@ -120,7 +126,7 @@ export default function DotMatrixBoard({ config, isEmbed }: { config: Config; is
           <MatrixGrid grid={capGrid} cell={capCell} radius={radius} />
         </div>
       )}
-      <MatrixGrid grid={grid} cell={cell} radius={radius} className="dm-main" />
+      <MatrixGrid grid={grid} cell={cell} radius={radius} className="dm-main" colon={colon} />
     </div>
   );
 }

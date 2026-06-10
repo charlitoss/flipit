@@ -78,6 +78,15 @@ body.idle {
   cursor: pointer;
 }
 
+/* Blinking clock colon: App toggles `colon-off` on each half-second boundary;
+   every board tags its ":" cells .clock-colon. A short fade keeps it smooth. */
+.clock-colon {
+  transition: opacity 0.1s linear;
+}
+body.colon-off .clock-colon {
+  opacity: 0;
+}
+
 /* Caption shown above the board (e.g. the date on the clock). */
 #caption-top {
   text-align: center;
@@ -908,6 +917,16 @@ body.matrix-mode {
 .dm-cell.on {
   background: var(--dm-on, #f4f4f4);
   box-shadow: 0 0 1.5px var(--dm-glow, rgba(255, 255, 255, 0.4));
+}
+/* A blinked-off colon shows the dim "off" cell (like its neighbours) rather
+   than fading to a transparent gap — a real panel's LEDs just go dark. */
+.dm-cell.clock-colon {
+  transition: background 0.1s linear, box-shadow 0.1s linear;
+}
+body.colon-off .dm-cell.clock-colon {
+  opacity: 1;
+  background: var(--dm-off, #222224);
+  box-shadow: none;
 }
 .dm-shape-sample {
   width: 26px;

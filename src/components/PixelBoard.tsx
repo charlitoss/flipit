@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getDisplayState } from "../lib/display";
+import { alignedInterval } from "../lib/clockTick";
 import { alarm } from "../lib/sound";
 import { pixelFamily } from "../lib/pixel";
 import type { Config } from "../lib/config";
@@ -35,8 +36,7 @@ export default function PixelBoard({ config, isEmbed }: { config: Config; isEmbe
         }
       }
     };
-    const id = window.setInterval(tick, 250);
-    return () => window.clearInterval(id);
+    return alignedInterval(tick, 250);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     config.mode,
@@ -86,7 +86,14 @@ export default function PixelBoard({ config, isEmbed }: { config: Config; isEmbe
     grid ? (
       <div className="pixel-row grid" key={i}>
         {[...line].map((ch, j) => (
-          <span className={"pixel-cell" + (ch === ":" || ch === " " ? " narrow" : "")} key={j}>
+          <span
+            className={
+              "pixel-cell" +
+              (ch === ":" || ch === " " ? " narrow" : "") +
+              (ch === ":" && config.mode === "clock" ? " clock-colon" : "")
+            }
+            key={j}
+          >
             {ch}
           </span>
         ))}

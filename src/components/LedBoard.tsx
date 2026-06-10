@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import LedChar from "./LedChar";
 import { getDisplayState } from "../lib/display";
+import { alignedInterval } from "../lib/clockTick";
 import { alarm } from "../lib/sound";
 import type { Config } from "../lib/config";
 
@@ -32,8 +33,7 @@ export default function LedBoard({ config, isEmbed }: { config: Config; isEmbed:
         }
       }
     };
-    const id = window.setInterval(tick, 250);
-    return () => window.clearInterval(id);
+    return alignedInterval(tick, 250);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     config.mode,
@@ -87,7 +87,10 @@ export default function LedBoard({ config, isEmbed }: { config: Config; isEmbed:
         {state.lines.map((line, i) => (
           <div className="led-row" key={i}>
             {[...line].map((ch, j) => (
-              <span className="led-cell" key={j}>
+              <span
+                className={"led-cell" + (ch === ":" && config.mode === "clock" ? " clock-colon" : "")}
+                key={j}
+              >
                 <LedChar ch={ch} />
               </span>
             ))}

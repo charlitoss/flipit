@@ -57,6 +57,8 @@ class Unit {
     if (this.isSep) {
       this.current = ch;
       this.setStatic(ch);
+      // Tag colon separators so the app can blink them in sync with the seconds.
+      this.el.classList.toggle("clock-colon", ch === ":");
       return;
     }
     if (ch === this.current && !this.flipping && this.queue.length === 0) return;
