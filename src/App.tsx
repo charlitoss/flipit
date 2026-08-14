@@ -10,7 +10,10 @@ import ModeControls from "./components/ModeControls";
 import AppearancePopover from "./components/AppearancePopover";
 import ExportPopover from "./components/ExportPopover";
 import RemindersPopover from "./components/RemindersPopover";
+import AgendaPopover from "./components/AgendaPopover";
 import Toast from "./components/Toast";
+import { useCalendar } from "./hooks/useCalendar";
+import { isBusyAt } from "./lib/calendar";
 import { Board } from "./lib/flipEngine";
 import { setFlipSound } from "./lib/flipEngine";
 import { tick, chime, unlockAudio } from "./lib/sound";
@@ -32,7 +35,7 @@ import {
 
 const { config: INITIAL, isEmbed: IS_EMBED, hadUrlCfg: HAD_URL_CFG } = getInitial();
 
-type Pop = "none" | "palette" | "export" | "reminders";
+type Pop = "none" | "palette" | "export" | "reminders" | "agenda";
 
 export default function App() {
   const [config, setConfig] = useState<Config>(INITIAL);
@@ -50,6 +53,12 @@ export default function App() {
   // Latest config for interval callbacks (avoids stale closures / re-subscribing).
   const configRef = useRef(config);
   configRef.current = config;
+
+  // Calendar lives in its own store (the ICS URL is a secret — see lib/calendar.ts).
+  const cal = useCalendar(IS_EMBED);
+  // Mirror for the reminder interval, so new events don't re-subscribe it.
+  const calEventsRef = useRef(cal.events);
+  calEventsRef.current = cal.events;
 
   // ----- Alerts (reminders) -----
   // playAlert: sound + (optional) desktop notification, no on-screen banner.
@@ -100,6 +109,26 @@ export default function App() {
     // CRT effect strength as a 0–1 factor (0.5 = the baseline look) for the CSS.
     document.body.style.setProperty("--crt", String(config.crtIntensity / 100));
   }, [config.style, config.pixelVariant, config.crtIntensity]);
+
+  // #topbar wraps to two rows on narrow screens, so a popover pinned to a fixed
+  // offset collides with it. Publish the measured bottom edge and anchor to that.
+  useLayoutEffect(() => {
+    if (IS_EMBED) return;
+    const bar = document.getElementById("topbar");
+    if (!bar) return;
+    const apply = () => {
+      const b = Math.round(bar.getBoundingClientRect().bottom);
+      document.documentElement.style.setProperty("--topbar-b", `${b}px`);
+    };
+    apply();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(apply) : null;
+    ro?.observe(bar);
+    window.addEventListener("resize", apply);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", apply);
+    };
+  }, []);
 
   // Light chrome only for light palettes in the flip style; LED/Pixel are dark.
   useLayoutEffect(() => {
@@ -193,6 +222,12 @@ export default function App() {
         update({ reminderLast: Date.now() });
         return;
       }
+      // Never interrupt a meeting. Note the deliberate asymmetry with the
+      // off-hours case above: that SLIDES the anchor (no break debt accrues
+      // overnight), while this HOLDS it, so the break is merely deferred and
+      // fires the moment you're free. Back-to-back meetings therefore produce
+      // one break when the block ends, not a queue of them.
+      if (isBusyAt(calEventsRef.current)) return;
       playAlert("Time for a break", c.reminderLabel || "Stand up and move", chime);
       update({ breakPrompt: true });
     }, 5000);
@@ -344,9 +379,11 @@ export default function App() {
             mode={config.mode}
             sound={config.sound}
             reminderOn={config.reminderOn}
+            cal={cal}
             onMode={onMode}
             onToggleSound={toggleSound}
             onToggleReminders={() => togglePop("reminders")}
+            onToggleAgenda={() => togglePop("agenda")}
             onToggleAppearance={() => togglePop("palette")}
             onFullscreen={fullscreen}
             onToggleExport={() => togglePop("export")}
@@ -424,6 +461,8 @@ export default function App() {
               onNotify={(reminderNotify) => update({ reminderNotify })}
             />
           )}
+
+          {openPop === "agenda" && <AgendaPopover cal={cal} />}
 
           {toast && <Toast title={toast.title} body={toast.body} />}
         </>

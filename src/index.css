@@ -1427,6 +1427,206 @@ body.light .bell-btn.bell-on:hover .bell-cd-value {
   color: #000;
 }
 
+/* ---------- Calendar pill (mirrors the bell: the trigger shows live info) ---------- */
+.cal-btn {
+  width: auto;
+  min-width: 40px;
+  border-radius: 999px;
+  padding: 0;
+  overflow: hidden;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, transform 0.1s, padding 0.28s ease;
+}
+.cal-btn.cal-on {
+  padding: 0 14px 0 12px;
+}
+.cal-cd-wrap {
+  display: flex;
+  align-items: center;
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width 0.28s ease, margin-left 0.28s ease, opacity 0.18s ease;
+}
+.cal-on .cal-cd-wrap {
+  max-width: 160px;
+  margin-left: 7px;
+  opacity: 1;
+}
+.cal-cd {
+  position: relative;
+  top: 1px; /* optical centering — stacked text reads ~1px high otherwise */
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+  white-space: nowrap;
+  min-width: 0;
+}
+.cal-cd-label {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ui-dim);
+}
+.cal-cd-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ui);
+  max-width: 146px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-btn.cal-on:hover .cal-cd-value {
+  color: #fff;
+}
+body.light .cal-btn.cal-on:hover .cal-cd-value {
+  color: #000;
+}
+
+/* ---------- Agenda popover ---------- */
+#agendaPop {
+  position: fixed;
+  /* Anchored to the measured topbar (it wraps to two rows when narrow), not a
+     fixed 64px like the older popovers. See the --topbar-b effect in App.tsx. */
+  top: calc(var(--topbar-b, 56px) + 8px);
+  right: clamp(16px, 3vw, 32px);
+  width: min(340px, calc(100vw - 32px));
+  max-height: calc(100vh - var(--topbar-b, 56px) - 28px);
+  overflow: auto;
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-border);
+  border-radius: 18px;
+  padding: 18px;
+  z-index: 26;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  transform-origin: top right;
+  animation: pop-in 0.2s ease;
+}
+#agendaPop h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ui-dim);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+.cal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cal-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--ui);
+}
+.cal-row.now {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.cal-row.past {
+  opacity: 0.42;
+}
+.cal-row-time {
+  flex: 0 0 auto;
+  width: 58px;
+  font-size: 11px;
+  color: var(--ui-dim);
+  font-variant-numeric: tabular-nums;
+}
+.cal-row.now .cal-row-time {
+  color: var(--accent);
+}
+.cal-row-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-row-badge {
+  flex: 0 0 auto;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.cal-empty {
+  padding: 6px 2px 2px;
+}
+.cal-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ui);
+}
+.cal-empty-hint {
+  font-size: 12px;
+  color: var(--ui-dim);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.cal-truncated {
+  margin-top: 8px;
+}
+.cal-actions {
+  display: flex;
+  gap: 8px;
+}
+.cal-actions .btn-ghost {
+  margin-top: 0;
+  width: auto;
+  flex: 1;
+  padding: 8px 10px;
+}
+.cal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.cal-updated {
+  font-size: 11px;
+  color: var(--ui-dim);
+}
+.cal-help {
+  font-size: 11.5px;
+  color: var(--ui-dim);
+  line-height: 1.45;
+  margin: 0 0 8px;
+}
+.cal-help:last-child {
+  margin-bottom: 0;
+}
+.cal-lag {
+  margin-top: 12px;
+}
+.cal-connect {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.cal-connect-btn {
+  width: 100%;
+  margin-top: 12px;
+}
+.cal-connect-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ---------- Export / share popover ---------- */
 #exportPop {
   position: fixed;
@@ -1522,5 +1722,15 @@ body.embed #stage {
   .seg button {
     padding: 8px 12px;
     font-size: 12px;
+  }
+  /* Two live pills (bell + calendar) don't fit next to the mode switcher, so
+     the calendar collapses to its icon — the agenda is one tap away. */
+  .cal-on .cal-cd-wrap {
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
+  }
+  .cal-btn.cal-on {
+    padding: 0;
   }
 }

@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 import type { Config } from "../lib/config";
 import { withinReminderWindow, nextBreakMs, breakLeftMs, fmtMs } from "../lib/reminders";
+import { busyUntil, eventAt, fmtTime, type CalEvent } from "../lib/calendar";
 
 // The live "next break" label that sits inside the bell button when reminders
-// are on. Ticks once a second; reflects a pending prompt / active break, and
-// shows "Off hours" outside the active window.
-export default function BellCountdown({ config }: { config: Config }) {
+// are on. Ticks once a second; reflects a pending prompt / active break, an
+// in-progress meeting, and shows "Off hours" outside the active window.
+export default function BellCountdown({
+  config,
+  events = [],
+}: {
+  config: Config;
+  events?: CalEvent[];
+}) {
   const [, tick] = useState(0);
   useEffect(() => {
     if (!config.reminderOn) return; // hidden while off — no need to tick
@@ -24,6 +31,10 @@ export default function BellCountdown({ config }: { config: Config }) {
   } else if (!withinReminderWindow(config)) {
     label = "Breaks paused";
     value = "Off hours";
+  } else if (eventAt(events)) {
+    // Deferred, not skipped — the break fires when the meeting block ends.
+    label = "In a meeting";
+    value = `Until ${fmtTime(busyUntil(events))}`;
   } else {
     label = "Next break";
     value = fmtMs(nextBreakMs(config));

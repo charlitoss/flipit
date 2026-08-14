@@ -6,15 +6,18 @@
   "description": "A high-end split-flap (Solari) flip-board display — clock, countdown, and message modes.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && tsc -p api && vite build",
+    "typecheck:api": "tsc -p api",
     "preview": "vite preview"
   },
   "dependencies": {
     "@vercel/speed-insights": "^2.0.0",
+    "ical.js": "^2.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/node": "^22.20.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
