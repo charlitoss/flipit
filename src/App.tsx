@@ -54,8 +54,30 @@ export default function App() {
   const configRef = useRef(config);
   configRef.current = config;
 
+  // ----- Toasts -----
+  // A silent on-screen banner (auto-clears). No sound, no desktop notification —
+  // those belong to reminders, not to UI confirmations.
+  const [toast, setToast] = useState<{ id: number; title: string; body: string } | null>(null);
+  const toastTimer = useRef<number>();
+  const showToast = useCallback((title: string, body: string) => {
+    if (IS_EMBED) return;
+    setToast({ id: Date.now(), title, body });
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 6000);
+  }, []);
+
   // Calendar lives in its own store (the ICS URL is a secret — see lib/calendar.ts).
-  const cal = useCalendar(IS_EMBED);
+  const cal = useCalendar(IS_EMBED, {
+    // Fires once per explicit connect, not on every periodic refresh.
+    onConnected: (count) =>
+      showToast(
+        "Calendar connected",
+        count === 0
+          ? "Nothing scheduled today."
+          : `${count} event${count === 1 ? "" : "s"} today.`
+      ),
+    onDisconnected: () => showToast("Calendar disconnected", "Your link was removed from this browser."),
+  });
   // Mirror for the reminder interval, so new events don't re-subscribe it.
   const calEventsRef = useRef(cal.events);
   calEventsRef.current = cal.events;
@@ -69,19 +91,15 @@ export default function App() {
     if (configRef.current.reminderNotify) showNotification(title, body);
   }, []);
 
-  // fireAlert: playAlert + a transient on-screen toast (auto-clears). Used for
-  // the brief "break's over" confirmation.
-  const [toast, setToast] = useState<{ id: number; title: string; body: string } | null>(null);
-  const toastTimer = useRef<number>();
+  // fireAlert: playAlert + a transient on-screen toast. Used for the brief
+  // "break's over" confirmation.
   const fireAlert = useCallback(
     (title: string, body: string, soundFn: () => void) => {
       if (IS_EMBED) return;
       playAlert(title, body, soundFn);
-      setToast({ id: Date.now(), title, body });
-      window.clearTimeout(toastTimer.current);
-      toastTimer.current = window.setTimeout(() => setToast(null), 6000);
+      showToast(title, body);
     },
-    [playAlert]
+    [playAlert, showToast]
   );
 
   // ----- Persist + apply palette/sound/embed -----
@@ -109,6 +127,12 @@ export default function App() {
     // CRT effect strength as a 0–1 factor (0.5 = the baseline look) for the CSS.
     document.body.style.setProperty("--crt", String(config.crtIntensity / 100));
   }, [config.style, config.pixelVariant, config.crtIntensity]);
+
+  // Popovers are right-aligned and toasts are centred, so on narrower windows a
+  // toast lands on top of an open panel. Flag the state for the CSS to dodge.
+  useEffect(() => {
+    document.body.classList.toggle("pop-open", openPop !== "none");
+  }, [openPop]);
 
   // #topbar wraps to two rows on narrow screens, so a popover pinned to a fixed
   // offset collides with it. Publish the measured bottom edge and anchor to that.

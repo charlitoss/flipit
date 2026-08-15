@@ -1193,6 +1193,14 @@ body.crt-on .pixel-board {
   animation: pop-in 0.2s ease;
   text-align: center;
   pointer-events: none;
+  transition: left 0.2s ease, transform 0.2s ease;
+}
+/* Popovers are right-aligned; slide the toast out from under an open one so it
+   never covers the panel it is confirming. */
+body.pop-open .toast {
+  left: clamp(16px, 3vw, 32px);
+  transform: none;
+  text-align: left;
 }
 .toast-title {
   font-size: 14px;

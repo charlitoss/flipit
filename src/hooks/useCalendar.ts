@@ -31,7 +31,13 @@ export interface CalendarApi extends CalendarState {
   setIncludeTitles: (v: boolean) => void;
 }
 
-export function useCalendar(isEmbed: boolean): CalendarApi {
+export interface CalendarEvents {
+  /** Fired once after an explicit connect succeeds — not on periodic refreshes. */
+  onConnected?: (eventCount: number) => void;
+  onDisconnected?: () => void;
+}
+
+export function useCalendar(isEmbed: boolean, handlers?: CalendarEvents): CalendarApi {
   const [settings, setSettings] = useState<CalSettings>(() =>
     isEmbed ? { url: "", on: false, includeTitles: true } : loadCal()
   );
@@ -44,6 +50,11 @@ export function useCalendar(isEmbed: boolean): CalendarApi {
   const abortRef = useRef<AbortController | null>(null);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
+  // Latest handlers, so a new inline callback doesn't retrigger the load effect.
+  const handlersRef = useRef(handlers);
+  handlersRef.current = handlers;
+  // Set by connect(), consumed by the next successful load.
+  const justConnected = useRef(false);
 
   const load = useCallback(async () => {
     const s = settingsRef.current;
@@ -60,8 +71,14 @@ export function useCalendar(isEmbed: boolean): CalendarApi {
       setTruncated(r.truncated);
       setError(null);
       setStatus("ok");
+      if (justConnected.current) {
+        justConnected.current = false;
+        handlersRef.current?.onConnected?.(r.events.filter((e) => !e.cancelled).length);
+      }
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
+      // A failed connect surfaces inline in the open panel, so no toast here.
+      justConnected.current = false;
       setError(e as CalError);
       setStatus("error");
     }
@@ -98,13 +115,18 @@ export function useCalendar(isEmbed: boolean): CalendarApi {
   }, []);
 
   const connect = useCallback(
-    (url: string) => persist({ ...settingsRef.current, url: url.trim(), on: true }),
+    (url: string) => {
+      justConnected.current = true;
+      persist({ ...settingsRef.current, url: url.trim(), on: true });
+    },
     [persist]
   );
 
   const disconnect = useCallback(() => {
     abortRef.current?.abort();
+    justConnected.current = false;
     clearCal();
+    handlersRef.current?.onDisconnected?.();
     setSettings({ url: "", on: false, includeTitles: true });
     setEvents([]);
     setError(null);
