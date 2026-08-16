@@ -10,7 +10,8 @@ The split-flap mechanism is a small, framework-agnostic TypeScript engine (imper
   - **Clock** — 12/24-hour, optional seconds, live date caption
   - **Countdown** — count down to a date & time or a quick H/M/S duration, with a custom "finished" label
   - **Message** — multi-line departure-board text (letters, numbers & `. , : ' ! ? - / & @ # % +`)
-- **Break reminders** — an optional recurring nudge ("stand up and move") every 30/45/60 min in any mode, with a custom label and an optional active-hours window. When it's time the bell pill flags **Break ready** and pulses (chime + browser notification too); opening it offers **Take a break** — which starts a configurable timer (5/10/15 min) and pauses the next-break countdown until it finishes — or **Skip**, which restarts the interval right away. The dropdown shows the live break clock while you're on a break, and the bell pill mirrors the next-break / on-break time on every screen (notifications reach you even when Flipit isn't the active tab, with a graceful chime fallback)
+- **Break reminders** — an optional recurring nudge ("stand up and move") every 30/45/60 min in any mode, with a custom label and an optional active-hours window. When it's time the bell pill flags **Break ready** and pulses (chime + browser notification too); opening it offers **Take a break** — which starts a configurable timer (5/10/15 min) and pauses the next-break countdown until it finishes — or **Skip**, which restarts the interval right away. The dropdown shows the live break clock while you're on a break, and the bell pill mirrors the next-break / on-break time on every screen (notifications reach you even when Flipit isn't the active tab, with a graceful chime fallback, and breaks are deferred while a calendar event is running so a nudge never lands mid-meeting)
+- **Calendar (today only)** — connect a read-only **secret iCal link** (Google, Outlook, iCloud, Fastmail, self-hosted) to see today's agenda and what's next. The toolbar pill shows the current or upcoming event, and the dropdown lists the day. Break reminders become meeting-aware: a break that would land during an event waits until the event ends, then fires immediately. The link is stored only in your browser, never goes into a share link or embed, and event details (description, location, attendees) are stripped server-side — titles can be hidden too
 - **Four display styles** — the **Split-flap** (Solari) board; a **digital LED** 14-segment alphanumeric display (5 colors); a **CRT** display using Vercel's Geist Pixel font (Square / Grid / Line variants + 6 retro color presets, each with a matching backdrop and a GPU-light **CRT effect** — scanlines, chromatic aberration, bloom, flicker and vignette — with an adjustable intensity slider); or a **Dot-matrix** panel — a 5×7 LED matrix with lit/unlit cells (6 color presets, and rounded / square / round cell shapes)
 - **Airport flutter** — each split-flap cell clatters through random characters and the board resolves in a left-to-right wave, just like a real Solari board. Editing a message only re-flips the letters that changed.
 - **10 color palettes** — Onyx, Slate, Midnight, Forest, Crimson, Synthwave, Amber (dark) + Departures, Paper, Mint (light)
@@ -54,6 +55,40 @@ The app is tuned for discoverability:
 
 The social/icon images are generated from `tmp` HTML sources via headless Chrome — re-run only if you want to change the artwork.
 
+## Calendar
+
+Calendar support is the one feature that needs a server: browsers can't fetch a
+provider's ICS URL directly (no CORS headers), so `api/calendar.ts` proxies it.
+
+- **It only works on the Vercel deployment.** The static `dist/` build (GitHub
+  Pages, `file://`) has no `/api`, and the UI degrades to an explanatory message.
+- **Local development:** `npm run dev` serves the function through a small Vite
+  middleware (`apiDev()` in `vite.config.ts`), so no `vercel dev` is needed.
+- **The ICS URL is a bearer credential.** It's sent in a POST **body** (never a
+  query string, which would land in access logs, history and `Referer`), stored
+  only in the visitor's `localStorage` under `flipit.cal`, and deliberately kept
+  out of `Config` so it can never reach a share link or embed.
+- **Security:** the proxy validates *resolved IPs* (not hostname strings) against
+  the private/reserved ranges in `api/_lib/ip.ts`, pins the connection to the
+  validated address (blocking DNS rebinding), re-validates every redirect hop,
+  and enforces size/timeout caps. Rate limiting is in-process per instance.
+- **Data minimisation:** parsing happens server-side, so only today's window is
+  returned and `DESCRIPTION` / `LOCATION` / `ATTENDEE` / `ORGANIZER` / raw `UID`
+  are stripped. Titles are the only content returned, and can be turned off.
+
+Optional environment variables (all have working defaults):
+
+| Variable | Purpose |
+| --- | --- |
+| `CALENDAR_ID_SALT` | Salt for event id hashes. Keep stable or ids churn between deploys. |
+| `CALENDAR_RATE_SALT` | Salt for rate-limit keys, so raw IPs are never held in memory. |
+| `CALENDAR_HOST_ALLOWLIST` | Empty by default. Emergency clamp: comma-separated host suffixes. |
+
+> **Freshness caveat:** provider ICS feeds are cached upstream — Google's secret
+> address in particular can lag the live calendar by a long way. Scheduled and
+> recurring meetings are reliable; an event created minutes ago may not appear
+> for a while. The agenda shows when it last updated, and has a manual refresh.
+
 ## Keyboard shortcuts
 
 | Key | Action |
@@ -67,10 +102,20 @@ The social/icon images are generated from `tmp` HTML sources via headless Chrome
 
 ```
 index.html              Vite entry
+vercel.json             Serverless function limits
+api/                    Vercel serverless functions (Node) — see "Calendar"
+  calendar.ts           POST: validate → rate limit → fetch ICS → parse → JSON
+  _lib/ssrf.ts          URL gate, DNS pinning, redirect re-validation, size caps
+  _lib/ip.ts            Private/reserved IP ranges (v4 + v6)
+  _lib/ics.ts           ical.js parse, VTIMEZONE, bounded recurrence expansion
+  _lib/ratelimit.ts     In-process token buckets (salted-hash keys)
+  _lib/errors.ts        ProxyError + user-facing copy per error code
 src/
   main.tsx              React bootstrap
   App.tsx               State, effects, and chrome orchestration
   index.css             Global styles + CSS variables
+  hooks/
+    useCalendar.ts      Calendar fetch/refresh lifecycle
   components/
     FlipBoard.tsx       Split-flap board: mounts the engine; runs the render loop
     LedBoard.tsx        Digital LED (14-segment) board
@@ -81,9 +126,13 @@ src/
     Toolbar.tsx         Mode switcher + tool buttons
     ModeControls.tsx    On-screen per-mode controls (clock / countdown / message)
     AppearancePopover.tsx  Combined color palette + board font picker
+    AgendaPopover.tsx   Today's agenda / connect / error states
+    CalendarPill.tsx    Live "now / next event" label inside the toolbar button
     ExportPopover.tsx   Share link, embed code, PNG download
     Icons.tsx           Inline SVG icons
   lib/
+    calendar.ts         Calendar store + pure busy/next-event helpers
+    calendar/types.ts   Wire contract shared with api/ (types only)
     flipEngine.ts       Framework-agnostic split-flap engine (Unit + Board)
     segments.ts         14-segment LED geometry + character map
     display.ts          Per-mode rendering (clock / countdown / message strings)

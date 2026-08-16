@@ -7,6 +7,10 @@
     "skipLibCheck": true,
 
     "moduleResolution": "bundler",
+    // Pinned: @types/node is installed for the /api functions, and without this
+    // its globals (Buffer, NodeJS.Timeout, a second fetch/Request) leak into the
+    // browser compilation.
+    "types": ["react", "react-dom"],
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
