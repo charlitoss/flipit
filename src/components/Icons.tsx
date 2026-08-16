@@ -77,6 +77,23 @@ export function CalendarIcon() {
   );
 }
 
+export function GearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" {...stroke}>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" />
+    </svg>
+  );
+}
+
+export function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" {...stroke}>
+      <polyline points="15 5 8 12 15 19" />
+    </svg>
+  );
+}
+
 export function ReplayIcon() {
   return (
     <svg viewBox="0 0 24 24" {...stroke}>
